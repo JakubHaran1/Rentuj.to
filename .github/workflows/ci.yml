@@ -22,9 +22,9 @@ jobs:
         image: postgres:16
 
         env:
-          POSTGRES_DB: rental_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          DB_NAME: rental_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
 
         ports:
           - 5432:5432
