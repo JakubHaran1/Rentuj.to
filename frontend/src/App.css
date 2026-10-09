@@ -1,0 +1,207 @@
+a {
+  text-decoration: none;
+}
+
+.account-menu[open] .account-menu__panel {
+  display: block;
+}
+
+.account-menu__link {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+.account-menu__link:hover {
+  background: #dfe3e9;
+  color: #2f80ed;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #c2c9d2;
+  border-radius: 9999px;
+  background: #e9edf2;
+  padding: 0.5rem 0.875rem;
+  color: #1f2937;
+  font-size: 0.875rem;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.filter-chip:hover {
+  border-color: #2f80ed;
+  background: #d9e0e8;
+}
+
+.filter-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.filter-checkbox:not(:checked) ~ .filter-overflow {
+  max-height: 5.25rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+}
+
+.filter-checkbox:checked ~ .filter-overflow {
+  max-height: none;
+}
+
+.filter-checkbox:checked ~ .filter-toggle .filter-toggle__closed,
+.filter-checkbox:not(:checked) ~ .filter-toggle .filter-toggle__open {
+  display: none;
+}
+
+.filter-checkbox:checked ~ .filter-toggle > span:last-child {
+  transform: rotate(180deg);
+}
+
+.filter-checkbox:focus-visible ~ .filter-toggle {
+  outline: 2px solid #2f80ed;
+  outline-offset: 3px;
+}
+
+.filter-toggle > span:last-child {
+  transition: transform 150ms ease;
+}
+
+.listing-cover {
+  display: flex;
+  min-height: 11rem;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+.listing-cover--one {
+  background: linear-gradient(135deg, #e8e4dc 0%, #d8e0dc 55%, #c8d2ce 100%);
+}
+
+.listing-cover--two {
+  background: linear-gradient(135deg, #e8e2d8 0%, #d8d9d1 55%, #c9d3ce 100%);
+}
+
+.listing-cover--three {
+  background: linear-gradient(135deg, #e9e5df 0%, #d6dde3 55%, #cbd5db 100%);
+}
+
+.map-preview {
+  position: relative;
+  min-height: 18rem;
+  overflow: hidden;
+  background-color: #eaf0ea;
+  background-image:
+    linear-gradient(28deg, transparent 48%, #fff 48%, #fff 51%, transparent 51%),
+    linear-gradient(108deg, transparent 46%, #fff 46%, #fff 49%, transparent 49%),
+    linear-gradient(158deg, transparent 62%, #d6e4d4 62%, #d6e4d4 73%, transparent 73%),
+    linear-gradient(30deg, transparent 20%, #dce8d8 20%, #dce8d8 32%, transparent 32%);
+  background-size: 15rem 12rem, 18rem 16rem, 100% 100%, 100% 100%;
+}
+
+.map-road {
+  position: absolute;
+  display: block;
+  height: 0.6rem;
+  border: 2px solid #fff;
+  border-right: 0;
+  border-left: 0;
+  background: #e3d9c7;
+  opacity: 0.9;
+}
+
+.map-road--one {
+  top: 32%;
+  left: -8%;
+  width: 118%;
+  transform: rotate(-12deg);
+}
+
+.map-road--two {
+  top: 57%;
+  left: -5%;
+  width: 108%;
+  transform: rotate(16deg);
+}
+
+.map-road--three {
+  top: 45%;
+  left: 35%;
+  width: 85%;
+  transform: rotate(72deg);
+}
+
+.map-label {
+  position: absolute;
+  color: #536454;
+  font-size: 0.75rem;
+}
+
+.map-label--one {
+  top: 18%;
+  left: 17%;
+}
+
+.map-label--two {
+  right: 14%;
+  bottom: 17%;
+}
+
+.map-pin {
+  position: absolute;
+  z-index: 1;
+  border: 2px solid #fff;
+  border-radius: 9999px;
+  background: #16324f;
+  padding: 0.45rem 0.65rem;
+  color: #fff;
+  box-shadow: 0 2px 8px rgb(22 50 79 / 18%);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.map-pin--one {
+  top: 28%;
+  left: 45%;
+}
+
+.map-pin--two {
+  top: 58%;
+  left: 20%;
+}
+
+.map-pin--three {
+  right: 15%;
+  bottom: 25%;
+}
+
+.dark .account-menu__link,
+.dark .filter-chip {
+  color: #f1f5f9;
+}
+
+.dark .account-menu__link:hover {
+  background: #1e293b;
+}
+
+.dark .filter-chip {
+  border-color: #475569;
+  background: #0f172a;
+}
+
+.dark .filter-chip:hover {
+  background: #172554;
+}
+
+.dark .map-preview {
+  filter: brightness(0.78);
+}
