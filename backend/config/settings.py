@@ -42,8 +42,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     "apps.users.app.UsersConfig",
-    "apps.rentals.app.RentalsConfig",
+    "apps.rentals.app.RentalsConfig"
 ]
+
+AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
