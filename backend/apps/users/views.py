@@ -1,4 +1,5 @@
 from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.shortcuts import render
 
 from django.contrib.auth.tokens import default_token_generator
@@ -6,9 +7,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.db import transaction
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from .serializers import UserCreateSerializer, UserSerializer
 from .models import User
@@ -16,10 +20,16 @@ from .models import User
 
 def activate_email_generation(request,uidb):
 
-  user = User.objects.get(uidb)
+  user = User.objects.get(id=uidb)
   token = default_token_generator.make_token(user)
   activation_link = request.build_absolute_uri(
-     reverse("activate-account",kwargs={"uidb64":user.id,"token":token})
+     reverse(
+         "activate-account",
+         kwargs={
+             "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+             "token": token,
+         },
+     )
      )
   
   context = {"token":token,"activation_link":activation_link}
@@ -34,12 +44,13 @@ def activate_email_generation(request,uidb):
   
   msg.attach_alternative(html, "text/html")
   msg.send()
-  return Response({"detail": "Email has sended sucefully","uidb":uidb})
    
-def activate_account(uidb64,token):
+@api_view(["GET"])
+def activate_account(request, uidb64, token):
     try:
-        user = User.objects.get(id=uidb64)
-    except (TypeError, ValueError, User.DoesNotExist):
+        user_id = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=user_id)
+    except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
         return Response({"detail": "Link isn't correct."}, status=400)
 
     if user.is_active:

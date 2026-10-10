@@ -1,0 +1,21 @@
+POST http://127.0.0.1:8000/api/users/
+Content-Type: application/json
+
+{
+  "name": "Nocturno",
+  "second_name": "User",
+  "email": "jakub2haran@gmail.com",
+  "password": "dev",
+  "confirm_password": "dev",
+  "birth_date": "2000-01-01"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/users/token
+Content-Type: application/json
+
+{
+  "email": "nocturno@gmail.com",
+  "password": "dev"
+}

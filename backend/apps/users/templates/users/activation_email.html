@@ -11,12 +11,12 @@
       <p>Hello{% if user.name %} {{ user.name }}{% endif %}!</p>
       <p>Thank you for creating an account with Rentuj.to. Click the button below to confirm your email address.</p>
       <p style="margin: 28px 0;">
-        <a href="{{ activation_url }}" style="display: inline-block; padding: 12px 20px; border-radius: 5px; background-color: #2563eb; color: #fff; text-decoration: none;">
+        <a href="{{ activation_link }}" style="display: inline-block; padding: 12px 20px; border-radius: 5px; background-color: #2563eb; color: #fff; text-decoration: none;">
           Confirm email address
         </a>
       </p>
       <p>If the button does not work, copy this link and open it in your browser:</p>
-      <p><a href="{{ activation_url }}">{{ activation_url }}</a></p>
+      <p><a href="{{ activation_link }}">{{ activation_link }}</a></p>
       <p>If you did not create a Rentuj.to account, you can ignore this email.</p>
     </main>
   </body>

@@ -28,7 +28,12 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG =  os.getenv("DJANGO_DEBUG",True)
 
 ALLOWED_HOSTS = []
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
 
 # Application definition
 
@@ -41,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    "rest_framework_simplejwt",
     "apps.users.app.UsersConfig",
     "apps.rentals.app.RentalsConfig"
 ]
@@ -157,5 +163,5 @@ CELERY_TASK_TRACK_STARTED = True
 # Mark as done when task was performed - normally it was marked as done when task downloaded    
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-# Email messages are printed to the runserver/worker console during local development.
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = BASE_DIR / "logs"
