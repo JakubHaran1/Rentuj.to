@@ -1,0 +1,7 @@
+Hello{% if user.name %} {{ user.name }}{% endif %}!
+
+Thank you for creating an account with Rentuj.to. Confirm your email address by opening the link below:
+
+{{ activation_url }}
+
+If you did not create a Rentuj.to account, you can ignore this email.

@@ -157,11 +157,5 @@ CELERY_TASK_TRACK_STARTED = True
 # Mark as done when task was performed - normally it was marked as done when task downloaded    
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Email messages are printed to the runserver/worker console during local development.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

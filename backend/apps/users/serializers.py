@@ -22,8 +22,13 @@ class UserCreateSerializer(ModelSerializer):
         password = validated_data.pop("password")
         confirm_password = validated_data.pop("confirm_password")
         if password != confirm_password:
-            return ValidationError({"confirm_password":"Confirm password isn't correct!"})
-        user = User.objects.create(password=password,**validated_data)
+            raise ValidationError({"confirm_password":"Confirm password isn't correct!"})
+        email = validated_data.pop("email")
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            **validated_data,
+        )
         return user
 
     def update(self, instance, validated_data):
