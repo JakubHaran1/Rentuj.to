@@ -19,7 +19,7 @@ from .models import User
 
 
 def activate_email_generation(request,uidb):
-
+# TODO  implement re-send email on button
   user = User.objects.get(id=uidb)
   token = default_token_generator.make_token(user)
   activation_link = request.build_absolute_uri(

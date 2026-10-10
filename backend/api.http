@@ -16,6 +16,6 @@ POST http://127.0.0.1:8000/api/users/token
 Content-Type: application/json
 
 {
-  "email": "nocturno@gmail.com",
+  "email": "jakub2haran@gmail.com",
   "password": "dev"
 }

@@ -2,6 +2,8 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.fields import CharField
 from .models import User
 from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
@@ -37,3 +39,9 @@ class UserCreateSerializer(ModelSerializer):
         user = User.objects.get_or_create(id=validated_data["id"])
         user.set_password(password)
         return user
+
+class UserCustomTokenSerializer(TokenObtainPairSerializer):
+   def validate(self, attrs):
+    data = super().validate(attrs)
+    data["user"] = UserSerializer(self.user).data
+    return data

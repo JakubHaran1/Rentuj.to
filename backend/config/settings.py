@@ -165,3 +165,7 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR / "logs"
+
+SIMPLE_JWT = {
+  "TOKEN_OBTAIN_SERIALIZER": "apps.users.serializers.UserCustomTokenSerializer",
+}

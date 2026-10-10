@@ -3,6 +3,8 @@
 /backend/staticfiles/
 /backend/media/
 __pycache__/
+/backend/logs/*
+
 # Logs
 frontend/logs
 frontend/*.log
