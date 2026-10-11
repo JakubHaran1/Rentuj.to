@@ -1,8 +1,13 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import EmailField, ModelSerializer, Serializer
 from rest_framework.fields import CharField
 from .models import User
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class PasswordResetRequestSerializer(Serializer):
+    email = EmailField()
+
 
 class UserSerializer(ModelSerializer):
     class Meta:

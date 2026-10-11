@@ -1,52 +1,53 @@
-from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.forms import SetPasswordForm
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.shortcuts import render
-
+from django.http import HttpRequest, HttpResponse
+from django.db.models import QuerySet
 from django.contrib.auth.tokens import default_token_generator
-
-from django.template.loader import render_to_string
-from django.urls import reverse
-from django.db import transaction
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.shortcuts import render
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.http import require_http_methods
 
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
-from .serializers import UserCreateSerializer, UserSerializer
+from common import email_generation, user_password_reset_token_generator
+from .serializers import (
+    PasswordResetRequestSerializer,
+    UserCreateSerializer,
+    UserSerializer,
+)
 from .models import User
 
 
-def activate_email_generation(request,uidb):
-# TODO  implement re-send email on button
-  user = User.objects.get(id=uidb)
-  token = default_token_generator.make_token(user)
-  activation_link = request.build_absolute_uri(
-     reverse(
-         "activate-account",
-         kwargs={
-             "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
-             "token": token,
-         },
-     )
-     )
-  
-  context = {"token":token,"activation_link":activation_link}
-  text = render_to_string("users/activation_email.txt",context=context)
-  html = render_to_string("users/activation_email.html",context=context)
-  msg = EmailMultiAlternatives(
-    subject="Subject here",
-    body=text,
-    from_email="from@example.com",
-    to=[user.email],
-    headers={"List-Unsubscribe": "<mailto:unsub@example.com>"})
-  
-  msg.attach_alternative(html, "text/html")
-  msg.send()
-   
+class UserViewSet(ModelViewSet):
+    queryset: QuerySet[User] = User.objects.all()
+
+    def get_serializer_class(
+        self,
+    ) -> type[UserSerializer] | type[UserCreateSerializer]:
+        if self.action == "list" or self.action == "retrieve":
+            return UserSerializer
+
+        return UserCreateSerializer
+
+    def perform_create(self, serializer: BaseSerializer) -> None:
+        user = serializer.save()
+        email_generation(
+            self.request,
+            user.id,
+            "users/activation_email.html",
+            "users/activation_email.txt",
+            "Welcome in Rentuj.to, thank you for creating a user account",
+            "activate-account"
+        )
+
+
 @api_view(["GET"])
-def activate_account(request, uidb64, token):
+def activate_account(request: Request, uidb64: str, token: str) -> Response:
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
@@ -63,22 +64,72 @@ def activate_account(request, uidb64, token):
     user.save(update_fields=["is_active"])
 
     return Response({"detail": "Account successfully activated."})
-   
-  
-   
-class UserViewSet(ModelViewSet):
-    queryset = User.objects.all()
-    
-    def get_serializer_class(self):
-      if self.action == "list" or self.action == "retrieve":
-        return UserSerializer
-      
-      return UserCreateSerializer
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        activate_email_generation(self.request,user.id)
-        
-    
 
- 
+@api_view(["POST"])
+def forget_password(request: Request) -> Response:
+    serializer = PasswordResetRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = User.objects.filter(
+        email=serializer.validated_data["email"]).first()
+
+    if user is not None:
+        email_generation(
+            request,
+            user.id,
+            "users/password_reset_email.html",
+            "users/password_reset_email.txt",
+            "Reset your Rentuj.to password",
+            route_name="password-reset",
+            token_generator=user_password_reset_token_generator,
+            # For the frontend later:
+            # link_template="http://localhost:5173/reset-password/{uidb64}/{token}",
+        )
+
+    return Response(
+        {"detail": "If an account with that email exists, a reset link has been sent."}
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def change_password(
+    request: HttpRequest,
+    uidb64: str,
+    token: str,
+) -> HttpResponse:
+    try:
+        user_id = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=user_id)
+    except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
+        return render(
+            request,
+            "users/password_reset_form.html",
+            {"invalid_link": True},
+            status=400,
+        )
+
+    if not user_password_reset_token_generator.check_token(user, token):
+        return render(
+            request,
+            "users/password_reset_form.html",
+            {"invalid_link": True},
+            status=400,
+        )
+    # TODO: dodać succes i dodac response success
+    form = SetPasswordForm(
+        user, request.POST if request.method == "POST" else None)
+    form.fields["new_password2"].label = "Confirm new password"
+    form.fields["new_password2"].help_text = "Enter your new password again."
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return render(
+            request,
+            "users/password_reset_form.html",
+            {"success": True},
+        )
+
+    return render(
+        request,
+        "users/password_reset_form.html",
+        {"form": form},
+    )
