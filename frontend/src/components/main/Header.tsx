@@ -4,12 +4,14 @@ import Button from "../common/Button";
 import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 import AccountMenu from "./AccountMenu";
+import { useUserContext } from "../context/UserContext";
 
 type HeaderProps = {
   isDarkMode: boolean;
   setIsDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 };
 function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
+  const { user } = useUserContext();
   const [openMenu, setOpenMenu] = useState<
     "signin" | "signup" | "account" | null
   >(null);
@@ -80,19 +82,29 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
           <Button href="#create-listing" variant="primary">
             Add a listing
           </Button>
-          <SignInForm
-            isOpen={openMenu === "signin"}
-            onToggle={() =>
-              setOpenMenu((current) => (current === "signin" ? null : "signin"))
-            }
-          />
-          <SignUpForm
-            isOpen={openMenu === "signup"}
-            onToggle={() =>
-              setOpenMenu((current) => (current === "signup" ? null : "signup"))
-            }
-          />
-          <AccountMenu openMenu={openMenu} setOpenMenu={setOpenMenu} />
+          {user ? (
+            <AccountMenu openMenu={openMenu} setOpenMenu={setOpenMenu} />
+          ) : (
+            <>
+              <SignInForm
+                isOpen={openMenu === "signin"}
+                onToggle={() =>
+                  setOpenMenu((current) =>
+                    current === "signin" ? null : "signin",
+                  )
+                }
+                onSuccess={() => setOpenMenu(null)}
+              />
+              <SignUpForm
+                isOpen={openMenu === "signup"}
+                onToggle={() =>
+                  setOpenMenu((current) =>
+                    current === "signup" ? null : "signup",
+                  )
+                }
+              />
+            </>
+          )}
         </div>
       </div>
     </header>

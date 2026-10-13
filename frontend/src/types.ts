@@ -6,7 +6,6 @@ type accessTokenType = {
 type LoginCredentialsType = {
   email: string;
   password: string;
-  other: string;
 };
 
 type User = {

@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { AuthService } from "../../services/authService";
 import { useUserContext } from "../context/UserContext";
 
 type AccountMenuProps = {
@@ -8,6 +9,12 @@ type AccountMenuProps = {
 
 function AccountMenu({ openMenu, setOpenMenu }: AccountMenuProps) {
   const { user } = useUserContext();
+
+  const handleLogout = () => {
+    AuthService.logout();
+    setOpenMenu(null);
+  };
+
   return (
     <details className="account-menu relative" open={openMenu === "account"}>
       <summary
@@ -63,9 +70,13 @@ function AccountMenu({ openMenu, setOpenMenu }: AccountMenuProps) {
         <a className="account-menu__link" href="#settings">
           Settings
         </a>
-        <a className="account-menu__link" href="#sign-out">
+        <button
+          className="account-menu__link w-full text-left"
+          onClick={handleLogout}
+          type="button"
+        >
           Sign out
-        </a>
+        </button>
       </div>
     </details>
   );

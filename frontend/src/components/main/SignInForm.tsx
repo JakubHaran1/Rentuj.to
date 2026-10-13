@@ -8,9 +8,10 @@ import { useUserContext } from "../context/UserContext";
 type SignInFormProps = {
   isOpen: boolean;
   onToggle: () => void;
+  onSuccess: () => void;
 };
 
-function SignInForm({ isOpen, onToggle }: SignInFormProps) {
+function SignInForm({ isOpen, onToggle, onSuccess }: SignInFormProps) {
   const { setUser } = useUserContext();
 
   const {
@@ -29,6 +30,7 @@ function SignInForm({ isOpen, onToggle }: SignInFormProps) {
     try {
       const response = await AuthService.login(values);
       setUser(response.user);
+      onSuccess();
     } catch (error: unknown) {
       setError("root.server", {
         type: "server",
