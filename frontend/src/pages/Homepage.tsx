@@ -1,6 +1,7 @@
-import Nav from "../components/Nav";
-import Map from "../components/Map";
-import Button from "../components/Button";
+import Search from "../components/common/Search";
+import Map from "../components/common/Map";
+import Button from "../components/common/Button";
+
 function Homepage() {
   return (
     <div id="home">
@@ -18,7 +19,7 @@ function Homepage() {
           </p>
         </div>
       </section>
-      <Nav />
+      <Search />
       <section
         className="mt-14 grid overflow-hidden rounded-xl border border-[#c2c9d2] bg-[#e9edf2] dark:border-slate-800 dark:bg-slate-900 md:grid-cols-[0.8fr_1.2fr]"
         aria-labelledby="nearby-heading"
@@ -37,7 +38,9 @@ function Homepage() {
             Explore available rentals on the map. Use your device location or
             choose an area to start browsing.
           </p>
-          <Button>Find rentals near me</Button>
+          <Button className="mt-5" variant="secondary">
+            Find rentals near me
+          </Button>
           <p className="mt-3 text-xs text-[#6b7280] dark:text-slate-400">
             Your location is only used with your permission.
           </p>

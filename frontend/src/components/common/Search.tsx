@@ -1,3 +1,5 @@
+import Button from "./Button";
+
 const mainFilters = [
   "Location",
   "Price",
@@ -23,7 +25,7 @@ const extraFilters = [
   "Verified landlord",
   "Private landlord",
 ];
-function Nav() {
+function Search() {
   return (
     <>
       <section aria-label="Apartment search">
@@ -60,12 +62,9 @@ function Nav() {
               <option value="any">Any term</option>
             </select>
           </label>
-          <button
-            className="rounded-lg bg-[#2f80ed] px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-            type="submit"
-          >
+          <Button className="px-6 py-3" type="submit">
             Search rentals
-          </button>
+          </Button>
         </form>
       </section>
 
@@ -128,4 +127,4 @@ function Nav() {
   );
 }
 
-export default Nav;
+export default Search;
