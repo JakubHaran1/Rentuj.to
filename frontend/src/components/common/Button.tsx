@@ -16,10 +16,8 @@ const variantClassNames: Record<ButtonVariant, string> = {
     "border-[#2f80ed] bg-transparent text-[#2f80ed] hover:bg-[#2f80ed] hover:text-white dark:hover:bg-[#2f80ed] dark:hover:text-white",
 };
 
-const getButtonClassName = (
-  variant: ButtonVariant,
-  className = "",
-) => `${baseClassName} ${variantClassNames[variant]} ${className}`.trim();
+const getButtonClassName = (variant: ButtonVariant, className = "") =>
+  `${baseClassName} ${variantClassNames[variant]} ${className}`.trim();
 
 type SharedProps = {
   children: ReactNode;
@@ -28,9 +26,8 @@ type SharedProps = {
 };
 
 type ButtonProps = SharedProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof SharedProps | "type"> & {
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof SharedProps> & {
     href?: never;
-    type?: ButtonHTMLAttributes<HTMLButtonElement>["type"];
   };
 
 type LinkProps = SharedProps &

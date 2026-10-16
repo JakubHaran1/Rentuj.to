@@ -9,7 +9,6 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 
 export const privateApi = axios.create({
   baseURL: API_BASE_URL,
-  headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
 
@@ -74,9 +73,9 @@ privateApi.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // check access tokens -  equal add access token to header /  not equal it means the other request perform refreshing
     originalRequest._retry = true;
     const currentAccess = window.localStorage.getItem("access");
+    // check access tokens -  equal: refresg access token to header /  not equal: it means the other request perform refreshing - add to header
     if (currentAccess && originalRequest._accessToken !== currentAccess) {
       originalRequest.headers.set("Authorization", `Bearer ${currentAccess}`);
       return await privateApi(originalRequest);

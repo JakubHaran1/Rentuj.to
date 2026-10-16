@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
-from common import email_generation, user_password_reset_token_generator
+from common import email_generation, user_password_reset_token_generator, save_img
 from .serializers import (
     PasswordResetRequestSerializer,
     UserCreateSerializer,
@@ -36,6 +36,7 @@ class UserViewSet(ModelViewSet):
 
     def perform_create(self, serializer: BaseSerializer) -> None:
         user = serializer.save()
+        save_img(user.avatar, (528, 528))
         email_generation(
             self.request,
             user.id,
@@ -63,7 +64,7 @@ def activate_account(request: Request, uidb64: str, token: str) -> Response:
     user.is_active = True
     user.save(update_fields=["is_active"])
 
-    return Response({"detail": "Account successfully activated."})
+    return Response({"detail": "Account successfully activated."}, status=200)
 
 
 @api_view(["POST"])
@@ -101,35 +102,9 @@ def change_password(
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
     except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
-        return render(
-            request,
-            "users/password_reset_form.html",
-            {"invalid_link": True},
-            status=400,
-        )
+        return Response({'detail': "Activation link isn't correct"}, status=404)
 
     if not user_password_reset_token_generator.check_token(user, token):
-        return render(
-            request,
-            "users/password_reset_form.html",
-            {"invalid_link": True},
-            status=400,
-        )
-    # TODO: dodać succes i dodac response success
-    form = SetPasswordForm(
-        user, request.POST if request.method == "POST" else None)
-    form.fields["new_password2"].label = "Confirm new password"
-    form.fields["new_password2"].help_text = "Enter your new password again."
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        return render(
-            request,
-            "users/password_reset_form.html",
-            {"success": True},
-        )
+        return Response({'detail': "Activation link isn't correct"}, status=404)
 
-    return render(
-        request,
-        "users/password_reset_form.html",
-        {"form": form},
-    )
+    return Response({'detail': "Your password has been changed"}, status=200)

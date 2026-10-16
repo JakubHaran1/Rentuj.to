@@ -4,16 +4,25 @@ import { AuthService } from "../../services/authService";
 import Button from "../common/Button";
 import type { LoginCredentialsType } from "../../types";
 import { useUserContext } from "../context/UserContext";
+import IconButton from "../common/IconButton";
+import { useState } from "react";
+import Input from "../common/Input";
 
 type SignInFormProps = {
   isOpen: boolean;
   onToggle: () => void;
   onSuccess: () => void;
+  listingLoginPrompt: boolean;
 };
 
-function SignInForm({ isOpen, onToggle, onSuccess }: SignInFormProps) {
+function SignInForm({
+  isOpen,
+  onToggle,
+  onSuccess,
+  listingLoginPrompt,
+}: SignInFormProps) {
   const { setUser } = useUserContext();
-
+  const [formState, setFormState] = useState(true);
   const {
     register,
     handleSubmit,
@@ -51,25 +60,41 @@ function SignInForm({ isOpen, onToggle, onSuccess }: SignInFormProps) {
       >
         Sign in
       </summary>
-      <form
-        className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
-        noValidate
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
-          Welcome back
-        </h2>
-        <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
-          Sign in to manage your rentals.
-        </p>
+      {formState ? (
+        <form
+          className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <IconButton
+            variant="close"
+            className="text-right"
+            onClick={(event) => {
+              event.preventDefault();
+              onToggle();
+            }}
+          />
+          {errors.root?.server && (
+            <p className="mt-4 text-sm text-red-600" role="alert">
+              {errors.root.server.message}
+            </p>
+          )}
 
-        <label className="mt-5 block text-sm font-medium text-[#1f2937] dark:text-slate-200">
-          Email
-          <input
+          <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
+            Welcome back
+          </h2>
+          <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
+            Sign in to manage your rentals.
+          </p>
+          {listingLoginPrompt && (
+            <p className="mt-3 text-sm font-medium text-[#16324f] dark:text-slate-200">
+              To add a listing, you need to be logged in.
+            </p>
+          )}
+          <Input
             autoComplete="email"
-            aria-invalid={Boolean(errors.email)}
-            aria-describedby={errors.email ? "signin-email-error" : undefined}
-            className="mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9ca3af] focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            error={errors.email?.message}
+            label="Email"
             placeholder="you@example.com"
             type="email"
             {...register("email", {
@@ -80,57 +105,72 @@ function SignInForm({ isOpen, onToggle, onSuccess }: SignInFormProps) {
               },
             })}
           />
-        </label>
-        {errors.email && (
-          <p
-            id="signin-email-error"
-            className="mt-1 text-sm text-red-600"
-            role="alert"
-          >
-            {errors.email.message}
-          </p>
-        )}
-
-        <label className="mt-4 block text-sm font-medium text-[#1f2937] dark:text-slate-200">
-          Password
-          <input
+          <Input
             autoComplete="current-password"
+            error={errors.password?.message}
+            label="Password"
             aria-invalid={Boolean(errors.password)}
-            aria-describedby={
-              errors.password ? "signin-password-error" : undefined
-            }
-            className="mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9ca3af] focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            placeholder="Enter your password"
+            placeholder="Create a password"
             type="password"
             {...register("password", {
-              required: "Password is required to login",
+              required: "Password is required",
             })}
           />
-        </label>
-        {errors.password && (
-          <p
-            id="signin-password-error"
-            className="mt-1 text-sm text-red-600"
-            role="alert"
+          <Button
+            className="mt-5 w-full py-3"
+            disabled={isSubmitting}
+            type="submit"
           >
-            {errors.password.message}
-          </p>
-        )}
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </Button>
 
-        {errors.root?.server && (
-          <p className="mt-4 text-sm text-red-600" role="alert">
-            {errors.root.server.message}
+          <p
+            className=" text-[#16324f] dark:text-slate-200 mt-2 text-center text-sm cursor-pointer"
+            onClick={() => setFormState((e) => !e)}
+          >
+            Password remaining
           </p>
-        )}
-
-        <Button
-          className="mt-5 w-full py-3"
-          disabled={isSubmitting}
-          type="submit"
+        </form>
+      ) : (
+        <form
+          className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
         >
-          {isSubmitting ? "Signing in..." : "Sign in"}
-        </Button>
-      </form>
+          <IconButton
+            variant="close"
+            className="text-right"
+            onClick={(event) => {
+              event.preventDefault();
+              onToggle();
+            }}
+          />
+          {errors.root?.server && (
+            <p className="mt-4 text-sm text-red-600" role="alert">
+              {errors.root.server.message}
+            </p>
+          )}
+
+          <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
+            Welcome back
+          </h2>
+          <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
+            Sign in to manage your rentals.
+          </p>
+          {listingLoginPrompt && (
+            <p className="mt-3 text-sm font-medium text-[#16324f] dark:text-slate-200">
+              To add a listing, you need to be logged in.
+            </p>
+          )}
+
+          <p
+            className=" text-[#16324f] dark:text-slate-200 mt-2 text-center text-sm cursor-pointer"
+            onClick={() => setFormState((e) => !e)}
+          >
+            Back to log in
+          </p>
+        </form>
+      )}
     </details>
   );
 }

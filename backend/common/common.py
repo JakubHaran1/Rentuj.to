@@ -1,18 +1,25 @@
-# Import only type for ide to import analyze
+# Import only type for idle to import analyze
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import UUID
-
+from PIL import Image
+from django.apps import apps
 from django.contrib.auth.tokens import (
     PasswordResetTokenGenerator,
     default_token_generator,
 )
+from io import BytesIO
+
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.core.files.base import ContentFile
+from django.db.models.fields.files import ImageFieldFile
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -47,10 +54,8 @@ def email_generation(
 ) -> None:
     # TODO  implement re-send email on button
     """Reusable sending email function"""
-
-    from apps.users.models import User
-
-    user = User.objects.get(id=uidb64)
+    user_model = apps.get_model("users", "User")
+    user = user_model.objects.get(id=uidb64)
     token = token_generator.make_token(user)
     encoded_user_id = urlsafe_base64_encode(force_bytes(user.pk))
     if link_template is None:
@@ -75,3 +80,14 @@ def email_generation(
 
     msg.attach_alternative(html, "text/html")
     msg.send()
+
+
+def save_img(file_field: ImageFieldFile, size: tuple):
+    file = file_field.file
+    new_path = Path(file.name).stem + ".webp"
+    with Image.open(file) as im:
+        im.thumbnail(size)
+        buffer = BytesIO()
+        im.save(buffer, format="WEBP", quality=85)
+        buffer.seek(0)
+        file_field.save(new_path, ContentFile(buffer.read()))

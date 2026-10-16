@@ -8,17 +8,43 @@ type LoginCredentialsType = {
   password: string;
 };
 
-type User = {
+type UserRoleType = "OWNER" | "RENTER";
+
+type UserType = {
   name: string;
-  user_type: string;
+  user_type: UserRoleType;
   // TODO: usunac nulla
   avatar: string | null;
   last_login: string;
   created: string;
 };
 
-type UserResponse = accessTokenType & {
-  user: User;
+type RegisterUserType = {
+  name: string;
+  second_name: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  avatar: string | FileList;
+  birth_date: string;
+  user_type?: UserRoleType;
 };
 
-export type { accessTokenType, LoginCredentialsType, User, UserResponse };
+type UserResponseType = accessTokenType & {
+  user: UserType;
+};
+
+type DrfErrorBodyType = {
+  detail?: unknown;
+  non_field_errors?: unknown;
+};
+
+export type {
+  accessTokenType,
+  LoginCredentialsType,
+  UserRoleType,
+  UserType,
+  RegisterUserType,
+  UserResponseType,
+  DrfErrorBodyType,
+};

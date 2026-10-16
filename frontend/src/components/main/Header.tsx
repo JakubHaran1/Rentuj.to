@@ -15,6 +15,7 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<
     "signin" | "signup" | "account" | null
   >(null);
+  const [showListingLoginPrompt, setShowListingLoginPrompt] = useState(false);
 
   return (
     <header className="border-b border-[#c2c9d2] bg-[#e9edf2] dark:border-slate-800 dark:bg-slate-900">
@@ -79,9 +80,23 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
           >
             {isDarkMode ? "Light mode" : "Dark mode"}
           </button>
-          <Button href="#create-listing" variant="primary">
-            Add a listing
-          </Button>
+          {user ? (
+            <Button href="#create-listing" variant="primary">
+              Add a listing
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                const shouldOpenSignIn = openMenu !== "signin";
+                setShowListingLoginPrompt(shouldOpenSignIn);
+                setOpenMenu(shouldOpenSignIn ? "signin" : null);
+              }}
+              type="button"
+              variant="primary"
+            >
+              Add a listing
+            </Button>
+          )}
           {user ? (
             <AccountMenu openMenu={openMenu} setOpenMenu={setOpenMenu} />
           ) : (
@@ -89,19 +104,27 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
               <SignInForm
                 isOpen={openMenu === "signin"}
                 onToggle={() =>
-                  setOpenMenu((current) =>
-                    current === "signin" ? null : "signin",
-                  )
+                  {
+                    setShowListingLoginPrompt(false);
+                    setOpenMenu((current) =>
+                      current === "signin" ? null : "signin",
+                    );
+                  }
                 }
-                onSuccess={() => setOpenMenu(null)}
+                onSuccess={() => {
+                  setOpenMenu(null);
+                  setShowListingLoginPrompt(false);
+                }}
+                listingLoginPrompt={showListingLoginPrompt}
               />
               <SignUpForm
                 isOpen={openMenu === "signup"}
-                onToggle={() =>
+                onToggle={() => {
+                  setShowListingLoginPrompt(false);
                   setOpenMenu((current) =>
                     current === "signup" ? null : "signup",
-                  )
-                }
+                  );
+                }}
               />
             </>
           )}
