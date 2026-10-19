@@ -7,6 +7,7 @@ import Header from "./components/main/Header";
 import Fotter from "./components/main/Footer";
 import ThanksPage from "./pages/static_pages/ThanksPage";
 import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
+import UpdateUserPage from "./pages/UpdateUserPage";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(
@@ -33,6 +34,7 @@ function App() {
             path="/password-reset/:uidb64/:token"
             element={<PasswordChangePage />}
           />
+          <Route path="/profile/edit" element={<UpdateUserPage />} />
         </Routes>
 
         <RecentlyViewed />

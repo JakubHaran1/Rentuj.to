@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { Link } from "react-router-dom";
 import { AuthService } from "../../services/authService";
 import { useUserContext } from "../context/UserContext";
 
@@ -55,9 +56,9 @@ function AccountMenu({ openMenu, setOpenMenu }: AccountMenuProps) {
             Manage your rental, agreements and conversations in one place.
           </p>
         </div>
-        <a className="account-menu__link" href="#account">
+        <Link className="account-menu__link" to="/profile/edit">
           My account
-        </a>
+        </Link>
         <a className="account-menu__link" href="#write-review">
           Write a review
         </a>
