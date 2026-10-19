@@ -1,12 +1,33 @@
-from rest_framework.serializers import EmailField, ModelSerializer, Serializer
+import hashlib
+
+from rest_framework.serializers import EmailField, ModelSerializer, Serializer, ImageField
 from rest_framework.fields import CharField, DateField
-from .models import User
+from .models import User, UserImg
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from common import save_img
+from datetime import date
 
 
 class PasswordResetRequestSerializer(Serializer):
     email = EmailField()
+
+
+class UserImgSerializer(ModelSerializer):
+    class Meta:
+        model = UserImg
+        fields = ["img", "user"]
+
+    def create(self, validated_data):
+        try:
+            img = validated_data["img"]
+            filename = img.name
+            validated_data["img"] = save_img(filename,
+                                             img, (512, 512), 4000, 4000)
+        except ValueError as err:
+            raise ValidationError(str(err))
+
+        return super().create(validated_data)
 
 
 class UserSerializer(ModelSerializer):
@@ -18,6 +39,20 @@ class UserSerializer(ModelSerializer):
 
 class UserCreateSerializer(ModelSerializer):
     confirm_password = CharField(write_only=True)
+    avatar = ImageField(write_only=True, required=False)
+
+    # def validate_birth_date(self, val):
+    #     today = date.today()
+    #     age = (
+    #         today.year
+    #         - val.year
+    #         - ((today.month, today.day) < (val.month, val.day))
+    #     )
+    #     if age < 18:
+    #         raise ValidationError(
+    #             "To create an account you need to be at least 18 years old")
+    #     print(repr(val))
+    #     return val
 
     class Meta:
         model = User
@@ -31,6 +66,7 @@ class UserCreateSerializer(ModelSerializer):
     def create(self, validated_data) -> User:
         password = validated_data.pop("password")
         confirm_password = validated_data.pop("confirm_password")
+        avatar_data = validated_data.pop("avatar")
         if password != confirm_password:
             raise ValidationError(
                 {"confirm_password": "Confirm password isn't correct!"})
@@ -40,19 +76,52 @@ class UserCreateSerializer(ModelSerializer):
             password=password,
             **validated_data,
         )
+
+        if avatar_data:
+            try:
+                converted_avatar = save_img(
+                    avatar_data.name,
+                    avatar_data,
+                    (512, 512),
+                    4000,
+                    4000,
+                )
+            except ValueError as err:
+                raise ValidationError("avatar", str(err))
+
+        UserImg.objects.create(
+            user=user,
+            img=converted_avatar,
+        )
+
         return user
 
     def update(self, instance: User, validated_data: dict) -> User:
         password = validated_data.pop("password")
         confirm_password = validated_data.pop("confirm_password")
+        avatar_data = validated_data.pop("avatar")
+
         if password != confirm_password:
             raise ValidationError({
                 "confirm_password": "Confirm password isn't correct!"})
 
-        instance = User.objects.get_or_create(id=validated_data["id"])
         instance.set_password(password)
+
         for key, value in validated_data:
             setattr(instance, key, value)
+
+        old_img = instance["img"]
+        old_img.seek(0)
+        old_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
+        new_img = validated_data["img"]
+        new_img.seek(0)
+        new_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
+
+        if (old_hash != new_hash):
+            for avatar in avatar_data:
+                serializer = UserImgSerializer.create(data=avatar)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(user=instance)
 
         return instance
 

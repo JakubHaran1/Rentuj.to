@@ -15,12 +15,13 @@ from io import BytesIO
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.urls import reverse
+
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.files.base import ContentFile
-from django.db.models.fields.files import ImageFieldFile
 
+
+from django.core.files.uploadedfile import UploadedFile
 if TYPE_CHECKING:
     from rest_framework.request import Request
 
@@ -32,12 +33,12 @@ class UserPasswordResetTokenGenerator(PasswordResetTokenGenerator):
 user_password_reset_token_generator = UserPasswordResetTokenGenerator()
 
 
-def create_path(instance, filename):
+def create_path(instance, filename: str):
     """Create path for imgs"""
     return (
         f"{instance._meta.app_label}/"
         f"{instance._meta.model_name}/"
-        f"{instance.pk}/"
+        f"{instance.user.pk}/"
         f"{filename}"
     )
 
@@ -78,12 +79,25 @@ def email_generation(
     msg.send()
 
 
-def save_img(file_field: ImageFieldFile, size: tuple):
+def save_img(file_name: str, file_field: UploadedFile, size: tuple, max_w: int, max_h: int) -> ContentFile:
+    """Generative function to save images"""
     file = file_field.file
-    new_path = Path(file.name).stem + ".webp"
-    with Image.open(file) as im:
-        im.thumbnail(size)
-        buffer = BytesIO()
-        im.save(buffer, format="WEBP", quality=85)
-        buffer.seek(0)
-        file_field.save(new_path, ContentFile(buffer.read()))
+    new_path = Path(file_name).stem + ".webp"
+    try:
+        with Image.open(file) as im:
+            width, height = im.size
+            if width > max_w or height > max_h:
+                raise ValueError(
+                    f"You may upload only an image with dimensions of {max_w}x{max_h} px.")
+            if im.format not in ["JPEG", "PNG", "WEBP"]:
+                raise ValueError(
+                    "You may upload only an image with jpg, png or webp extension")
+            im.thumbnail(size)
+            buffer = BytesIO()
+            im.save(buffer, format="WEBP", quality=85)
+            buffer.seek(0)
+
+            return ContentFile(buffer.read(), name=new_path)
+
+    except (Image.UnidentifiedImageError, OSError):
+        raise ValueError("Image file is incorrect")

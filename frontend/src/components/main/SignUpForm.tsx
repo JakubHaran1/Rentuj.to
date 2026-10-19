@@ -31,6 +31,7 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<RegisterUserType>({
     defaultValues: {
@@ -49,6 +50,7 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
     try {
       await AuthService.register(userData);
       setRegisterStatus(true);
+      reset();
     } catch (error: unknown) {
       if (axios.isAxiosError<RegisterUserType>(error)) {
         const data = error.response?.data;
@@ -98,6 +100,7 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
           onClick={(event) => {
             event.preventDefault();
             onToggle();
+            setRegisterStatus(false);
           }}
         />
         {!registerStatus ? (

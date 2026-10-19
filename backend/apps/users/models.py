@@ -46,13 +46,16 @@ class User(AbstractUser):
     second_name = models.CharField(max_length=50)
     user_type = models.CharField(
         choices=UserType.choices, default=UserType.RENTER)
-    avatar = models.ImageField(upload_to=create_path, default="")
     birth_date = models.DateField()
     last_login = models.DateTimeField(null=True)
     created = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=False)
-
     objects = UserManager()
-
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name", "second_name", "birth_date"]
+
+
+class UserImg(models.Model):
+    img = models.ImageField(upload_to=create_path, default="")
+    user = models.ForeignKey(User, related_name="avatar",
+                             on_delete=models.CASCADE)

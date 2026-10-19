@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
 
-from common import email_generation, user_password_reset_token_generator, save_img
+from common import email_generation, user_password_reset_token_generator
 from .serializers import (
     PasswordResetRequestSerializer,
     UserCreateSerializer,
@@ -36,7 +36,6 @@ class UserViewSet(ModelViewSet):
 
     def perform_create(self, serializer: BaseSerializer) -> None:
         user = serializer.save()
-        save_img(user.avatar, (528, 528))
         email_generation(
             self.request,
             user.id,
