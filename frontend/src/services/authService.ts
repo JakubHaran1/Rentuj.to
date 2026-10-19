@@ -3,6 +3,7 @@ import type {
   LoginCredentialsType,
   RegisterUserType,
   UserResponseType,
+  ConfirmPasswordType,
 } from "../types";
 
 export const AuthService = {
@@ -40,5 +41,34 @@ export const AuthService = {
     });
     const resp = await publicApi.post("/users/", formData);
     return { status: resp.status, detail: resp.data.detail };
+  },
+
+  async activeAccount(
+    uidb64: string,
+    token: string,
+  ): Promise<{ detail: string }> {
+    const resp = await publicApi.post(`users/activate/${uidb64}/${token}`);
+    return resp.data;
+  },
+
+  async remindPassword(email: string): Promise<{ detail: string }> {
+    const formData = new FormData();
+    formData.append("email", email);
+    const resp = await publicApi.post(
+      "users/password/forget-password",
+      formData,
+    );
+    return resp.data;
+  },
+  async changePassword(data: ConfirmPasswordType): Promise<{ detail: string }> {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    const resp = await publicApi.post(
+      `users/password/reset/${data.uidb64}/${data.token}`,
+      formData,
+    );
+    return resp.data;
   },
 };

@@ -70,7 +70,7 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
         else {
           setError("root.server", {
             type: "server",
-            message: "Unable to sign in.\n An unexpected error occurred.",
+            message: "Unable to sign up.\n An unexpected error occurred.",
           });
         }
       }

@@ -47,11 +47,12 @@ class UserViewSet(ModelViewSet):
         )
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def activate_account(request: Request, uidb64: str, token: str) -> Response:
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
+
     except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
         return Response({"detail": "Link isn't correct."}, status=400)
 
@@ -92,7 +93,7 @@ def forget_password(request: Request) -> Response:
     )
 
 
-@require_http_methods(["GET", "POST"])
+@api_view(["POST"])
 def change_password(
     request: HttpRequest,
     uidb64: str,
@@ -101,10 +102,19 @@ def change_password(
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
+        password = request.data.get("password")
+        confirm = request.data.get("confirm")
+
     except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
         return Response({'detail': "Activation link isn't correct"}, status=404)
 
     if not user_password_reset_token_generator.check_token(user, token):
         return Response({'detail': "Activation link isn't correct"}, status=404)
+
+    if password != confirm:
+        return Response({'detail': "Password and confirm password aren't correct"}, status=202)
+
+    user.set_password(password)
+    user.save()
 
     return Response({'detail': "Your password has been changed"}, status=200)

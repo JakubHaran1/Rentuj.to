@@ -1,13 +1,9 @@
-import type {
-  AnchorHTMLAttributes,
-  ButtonHTMLAttributes,
-  ReactNode,
-} from "react";
-
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { Link, type LinkProps as RouterLinkProps } from "react-router-dom";
 export type ButtonVariant = "primary" | "secondary";
 
 const baseClassName =
-  "inline-flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f80ed]";
+  "inline-flex items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f80ed] cursor-pointer";
 
 const variantClassNames: Record<ButtonVariant, string> = {
   primary:
@@ -27,18 +23,18 @@ type SharedProps = {
 
 type ButtonProps = SharedProps &
   Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof SharedProps> & {
-    href?: never;
+    to?: never;
   };
 
 type LinkProps = SharedProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof SharedProps> & {
-    href: string;
+  Omit<RouterLinkProps, keyof SharedProps> & {
+    to: string;
   };
 
 function Button(props: ButtonProps | LinkProps) {
-  if ("href" in props && typeof props.href === "string") {
+  if ("to" in props && typeof props.to === "string") {
     const {
-      href,
+      to,
       children,
       variant = "primary",
       className = "",
@@ -46,13 +42,13 @@ function Button(props: ButtonProps | LinkProps) {
     } = props;
 
     return (
-      <a
+      <Link
         className={getButtonClassName(variant, className)}
-        href={href}
+        to={to}
         {...linkProps}
       >
         {children}
-      </a>
+      </Link>
     );
   }
 

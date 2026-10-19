@@ -16,7 +16,7 @@ router.register(r'', UserViewSet)
 urlpatterns = [
     path("token", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh", TokenRefreshView.as_view(), name="token_refresh"),
-    path("password/forgot", forget_password, name="forget-password"),
+    path("password/forget-password", forget_password, name="forget-password"),
     path(
         "password/reset/<uidb64>/<token>",
         change_password,

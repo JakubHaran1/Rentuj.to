@@ -25,7 +25,7 @@ load_dotenv(BASE_DIR.parent / ".env")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =  os.getenv("DJANGO_DEBUG",True)
+DEBUG = os.getenv("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = []
 REST_FRAMEWORK = {
@@ -72,7 +72,9 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -160,12 +162,17 @@ CELERY_RESULT_BACKEND = os.getenv(
 )
 
 CELERY_TASK_TRACK_STARTED = True
-# Mark as done when task was performed - normally it was marked as done when task downloaded    
+# Mark as done when task was performed - normally it was marked as done when task downloaded
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR / "logs"
 
 SIMPLE_JWT = {
-  "TOKEN_OBTAIN_SERIALIZER": "apps.users.serializers.UserCustomTokenSerializer",
+    "TOKEN_OBTAIN_SERIALIZER": "apps.users.serializers.UserCustomTokenSerializer",
 }
+
+FRONTEND_URL = os.environ.get(
+    "FRONTEND_URL",
+    "http://localhost:5173"
+)

@@ -1,6 +1,6 @@
 # Import only type for idle to import analyze
 from __future__ import annotations
-
+from config.settings import FRONTEND_URL
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -59,13 +59,9 @@ def email_generation(
     token = token_generator.make_token(user)
     encoded_user_id = urlsafe_base64_encode(force_bytes(user.pk))
     if link_template is None:
-        link = request.build_absolute_uri(
-            reverse(
-                route_name,
-                kwargs={"uidb64": encoded_user_id, "token": token},
-            )
-        )
+        link = f"{FRONTEND_URL}/{route_name}/{encoded_user_id}/{token}"
     else:
+        # TODO: ADD "IF" ONE LEVEL BEFORE AND CHECK LINK_NEDED - THEN ADD WORKFLOW WITHOUT USER_ID AND TOKEN - ONLY LINK TEMPLATE
         link = link_template.format(uidb64=encoded_user_id, token=token)
 
     context = {"token": token, "link": link, "user": user}

@@ -1,10 +1,13 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import Homepage from "./pages/Homepage";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import RecentlyViewed from "./components/main/RecentlyViewed";
 import Header from "./components/main/Header";
 import Fotter from "./components/main/Footer";
+import ThanksPage from "./pages/static_pages/ThanksPage";
+import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
+
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(
     () => window.localStorage.getItem("theme") === "dark",
@@ -22,7 +25,14 @@ function App() {
       <main className="mx-auto w-[min(90%,1440px)]">
         <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="/activate-account/:uidb64/:token"
+            element={<ThanksPage />}
+          />
+          <Route
+            path="/password-reset/:uidb64/:token"
+            element={<PasswordChangePage />}
+          />
         </Routes>
 
         <RecentlyViewed />

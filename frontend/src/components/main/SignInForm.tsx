@@ -15,6 +15,10 @@ type SignInFormProps = {
   listingLoginPrompt: boolean;
 };
 
+type RemindPasswordType = {
+  email: string;
+};
+
 function SignInForm({
   isOpen,
   onToggle,
@@ -22,32 +26,54 @@ function SignInForm({
   listingLoginPrompt,
 }: SignInFormProps) {
   const { setUser } = useUserContext();
-  const [formState, setFormState] = useState(true);
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginCredentialsType>({
+  const [formType, setFormType] = useState(true);
+  const [remindState, setRemindState] = useState<string>("");
+
+  const loginForm = useForm<LoginCredentialsType>({
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (values: LoginCredentialsType) => {
+  const remindForm = useForm<RemindPasswordType>({
+    defaultValues: {
+      email: "",
+    },
+  });
+  const onSubmitLogin = async (values: LoginCredentialsType) => {
     try {
       const response = await AuthService.login(values);
       setUser(response.user);
       onSuccess();
+      loginForm.reset();
     } catch (error: unknown) {
-      setError("root.server", {
+      loginForm.setError("root.server", {
         type: "server",
         message: axios.isAxiosError<{ detail?: string }>(error)
           ? (error.response?.data?.detail ?? "Unable to sign in.")
           : "An unexpected error occurred.",
       });
     }
+  };
+
+  const onSubmitRemind = async (value: RemindPasswordType) => {
+    try {
+      const resp = await AuthService.remindPassword(value.email);
+      setRemindState(resp.detail);
+      remindForm.reset();
+    } catch {
+      remindForm.setError("root.server", {
+        type: "server",
+        message: "Unable to send an activation message.",
+      });
+    }
+  };
+
+  const onResetRemind = () => {
+    remindForm.reset();
+    setFormType(true);
+    setRemindState("");
   };
   return (
     <details className="account-menu relative" open={isOpen}>
@@ -56,15 +82,16 @@ function SignInForm({
         onClick={(event) => {
           event.preventDefault();
           onToggle();
+          onResetRemind();
         }}
       >
         Sign in
       </summary>
-      {formState ? (
+      {formType ? (
         <form
           className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
           noValidate
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={loginForm.handleSubmit(onSubmitLogin)}
         >
           <IconButton
             variant="close"
@@ -74,9 +101,9 @@ function SignInForm({
               onToggle();
             }}
           />
-          {errors.root?.server && (
+          {loginForm.formState.errors.root?.server && (
             <p className="mt-4 text-sm text-red-600" role="alert">
-              {errors.root.server.message}
+              {loginForm.formState.errors.root.server.message}
             </p>
           )}
 
@@ -93,11 +120,11 @@ function SignInForm({
           )}
           <Input
             autoComplete="email"
-            error={errors.email?.message}
+            error={loginForm.formState.errors.email?.message}
             label="Email"
             placeholder="you@example.com"
             type="email"
-            {...register("email", {
+            {...loginForm.register("email", {
               required: "Email is required to login",
               pattern: {
                 value: /^\S+@\S+\.\S+$/,
@@ -107,35 +134,35 @@ function SignInForm({
           />
           <Input
             autoComplete="current-password"
-            error={errors.password?.message}
+            error={loginForm.formState.errors.password?.message}
             label="Password"
-            aria-invalid={Boolean(errors.password)}
+            aria-invalid={Boolean(loginForm.formState.errors.password)}
             placeholder="Create a password"
             type="password"
-            {...register("password", {
+            {...loginForm.register("password", {
               required: "Password is required",
             })}
           />
           <Button
             className="mt-5 w-full py-3"
-            disabled={isSubmitting}
+            disabled={loginForm.formState.isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {loginForm.formState.isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
 
           <p
-            className=" text-[#16324f] dark:text-slate-200 mt-2 text-center text-sm cursor-pointer"
-            onClick={() => setFormState((e) => !e)}
+            className=" text-[#16324f] dark:text-slate-200 mt-4 text-center text-sm cursor-pointer"
+            onClick={() => setFormType(false)}
           >
-            Password remaining
+            Password recovery
           </p>
         </form>
       ) : (
         <form
           className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
           noValidate
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={remindForm.handleSubmit(onSubmitRemind)}
         >
           <IconButton
             variant="close"
@@ -143,29 +170,62 @@ function SignInForm({
             onClick={(event) => {
               event.preventDefault();
               onToggle();
+              onResetRemind();
             }}
           />
-          {errors.root?.server && (
+          {remindForm.formState.errors.root?.server && (
             <p className="mt-4 text-sm text-red-600" role="alert">
-              {errors.root.server.message}
+              {remindForm.formState.errors.root.server.message}
             </p>
           )}
 
           <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
             Welcome back
           </h2>
-          <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
-            Sign in to manage your rentals.
-          </p>
-          {listingLoginPrompt && (
-            <p className="mt-3 text-sm font-medium text-[#16324f] dark:text-slate-200">
-              To add a listing, you need to be logged in.
+
+          {remindState ? (
+            <p className="mt-1 text-sm text-green-600 dark:text-green-400">
+              {remindState}
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
+              If you forget the password, you can easly remind it:
             </p>
           )}
-
+          {remindForm.formState.errors.root?.server && (
+            <p className="mt-4 text-sm text-red-600" role="alert">
+              {remindForm.formState.errors.root.server.message}
+            </p>
+          )}
+          <Input
+            autoComplete="email"
+            error={remindForm.formState.errors.email?.message}
+            label="Email"
+            placeholder="you@example.com"
+            type="email"
+            {...remindForm.register("email", {
+              required: "Email is required to remind a password",
+              pattern: {
+                value: /^\S+@\S+\.\S+$/,
+                message: "Enter a valid email address.",
+              },
+            })}
+          />
+          <Button
+            className="mt-5 w-full py-3"
+            disabled={remindForm.formState.isSubmitting}
+            type="submit"
+          >
+            {remindForm.formState.isSubmitting
+              ? "Sending"
+              : "Send  a reminder message"}
+          </Button>
           <p
-            className=" text-[#16324f] dark:text-slate-200 mt-2 text-center text-sm cursor-pointer"
-            onClick={() => setFormState((e) => !e)}
+            className=" text-[#16324f] dark:text-slate-200 mt-4 text-center text-sm cursor-pointer"
+            onClick={() => {
+              setFormType(true);
+              onResetRemind();
+            }}
           >
             Back to log in
           </p>

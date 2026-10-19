@@ -14,7 +14,7 @@ type UserType = {
   name: string;
   user_type: UserRoleType;
   // TODO: usunac nulla
-  avatar: string | null;
+  avatar: string | FileList;
   last_login: string;
   created: string;
 };
@@ -38,7 +38,12 @@ type DrfErrorBodyType = {
   detail?: unknown;
   non_field_errors?: unknown;
 };
-
+type ConfirmPasswordType = {
+  uidb64: string;
+  token: string;
+  confirm: string;
+  password: string;
+};
 export type {
   accessTokenType,
   LoginCredentialsType,
@@ -47,4 +52,5 @@ export type {
   RegisterUserType,
   UserResponseType,
   DrfErrorBodyType,
+  ConfirmPasswordType,
 };

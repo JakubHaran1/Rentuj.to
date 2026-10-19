@@ -34,7 +34,7 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
         >
           <a
             className="whitespace-nowrap text-[#16324f] dark:text-white"
-            href="#home"
+            href="/"
           >
             Home
           </a>
@@ -81,7 +81,7 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             {isDarkMode ? "Light mode" : "Dark mode"}
           </button>
           {user ? (
-            <Button href="#create-listing" variant="primary">
+            <Button to="#create-listing" variant="primary">
               Add a listing
             </Button>
           ) : (
@@ -103,14 +103,12 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             <>
               <SignInForm
                 isOpen={openMenu === "signin"}
-                onToggle={() =>
-                  {
-                    setShowListingLoginPrompt(false);
-                    setOpenMenu((current) =>
-                      current === "signin" ? null : "signin",
-                    );
-                  }
-                }
+                onToggle={() => {
+                  setShowListingLoginPrompt(false);
+                  setOpenMenu((current) =>
+                    current === "signin" ? null : "signin",
+                  );
+                }}
                 onSuccess={() => {
                   setOpenMenu(null);
                   setShowListingLoginPrompt(false);
