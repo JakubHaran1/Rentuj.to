@@ -1,9 +1,11 @@
 import { publicApi } from "../api/public";
+import { privateApi } from "../api/private";
 import type {
   LoginCredentialsType,
   RegisterUserType,
   UserResponseType,
   ConfirmPasswordType,
+  EditUserType,
 } from "../types";
 
 export const AuthService = {
@@ -69,6 +71,23 @@ export const AuthService = {
       `users/password/reset/${data.uidb64}/${data.token}`,
       formData,
     );
+    return resp.data;
+  },
+  async editUserData(
+    data: Partial<EditUserType>,
+    userId: string,
+  ): Promise<{ detail: string }> {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value === undefined) return;
+      if (value instanceof FileList) {
+        const file = value.item(0);
+        if (file) formData.append(key, file);
+      } else {
+        formData.append(key, value);
+      }
+    });
+    const resp = await privateApi.patch(`/users/${userId}`, formData);
     return resp.data;
   },
 };

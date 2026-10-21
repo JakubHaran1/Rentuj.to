@@ -1,5 +1,5 @@
 from django.contrib.auth.forms import SetPasswordForm
-from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.db.models import QuerySet
 from django.contrib.auth.tokens import default_token_generator
@@ -13,6 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
+
 
 from common import email_generation, user_password_reset_token_generator
 from .serializers import (
@@ -45,32 +46,71 @@ class UserViewSet(ModelViewSet):
             "activate-account"
         )
 
+    def update(self, request: Request, *args, **kwargs):
+        instance = self.get_object()
+
+        email_change_requested = (
+            request.data.get("email") is not None
+            and request.data.get("email") != instance.email
+        )
+        if instance.id != request.user.pk:
+            raise ValidationError({"detail": "you can edit your profil only"})
+
+        response = super().update(request, *args, **kwargs)
+
+        if email_change_requested and instance.new_email:
+            email_generation(
+                self.request,
+                instance.id,
+                "users/email_change_email.html",
+                "users/email_change_email.txt",
+                "Verify your new email address",
+                "verify-email",
+                to_email=instance.new_email,
+            )
+        return response
+
 
 @api_view(["POST"])
 def activate_account(request: Request, uidb64: str, token: str) -> Response:
+    """activate_account but also handle change_email_requests from userUpdateForm"""
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
 
-    except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
+    except (ValidationError, TypeError, ValueError, User.DoesNotExist):
         return Response({"detail": "Link isn't correct."}, status=400)
-
-    if user.is_active:
-        return Response({"detail": "Account is already active"})
 
     if not default_token_generator.check_token(user, token):
         return Response({"detail": "Link is incorrect or it has been expired"}, status=400)
 
-    user.is_active = True
-    user.save(update_fields=["is_active"])
+    if not user.new_email:
+        if user.is_active:
+            return Response({"detail": "Account is already active"})
 
-    return Response({"detail": "Account successfully activated."}, status=200)
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+
+        return Response({"detail": "Account successfully activated."}, status=200)
+
+    if user.new_email != user.email:
+        user.email = user.new_email
+        user.new_email = None
+        user.save(update_fields=["email", "new_email"])
+        return Response(
+            {"detail": "Email address successfully changed."},
+            status=200,
+        )
+
+    return Response({"detail": "There is no pending email change."}, status=400)
 
 
 @api_view(["POST"])
 def forget_password(request: Request) -> Response:
+    """send a message to reset password"""
     serializer = PasswordResetRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    # add quering here
     user = User.objects.filter(
         email=serializer.validated_data["email"]).first()
 
@@ -80,7 +120,7 @@ def forget_password(request: Request) -> Response:
             user.id,
             "users/password_reset_email.html",
             "users/password_reset_email.txt",
-            "Reset your Rentuj.to password",
+            "Reset your password to Rentuj.to platform",
             route_name="password-reset",
             token_generator=user_password_reset_token_generator,
             # For the frontend later:
@@ -98,13 +138,14 @@ def change_password(
     uidb64: str,
     token: str,
 ) -> HttpResponse:
+    """Changing password"""
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
         password = request.data.get("password")
         confirm = request.data.get("confirm")
 
-    except (DjangoValidationError, TypeError, ValueError, User.DoesNotExist):
+    except (ValidationError, TypeError, ValueError, User.DoesNotExist):
         return Response({'detail': "Activation link isn't correct"}, status=404)
 
     if not user_password_reset_token_generator.check_token(user, token):

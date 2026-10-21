@@ -50,6 +50,7 @@ def email_generation(
     txt_template: str,
     subject: str,
     route_name: str,
+    to_email: str | None = None,
     link_template: str | None = None,
     token_generator: PasswordResetTokenGenerator = default_token_generator,
 ) -> None:
@@ -59,6 +60,7 @@ def email_generation(
     user = user_model.objects.get(id=uidb64)
     token = token_generator.make_token(user)
     encoded_user_id = urlsafe_base64_encode(force_bytes(user.pk))
+    user_email = user.email if to_email is None else to_email
     if link_template is None:
         link = f"{FRONTEND_URL}/{route_name}/{encoded_user_id}/{token}"
     else:
@@ -72,7 +74,7 @@ def email_generation(
         subject=subject,
         body=text,
         from_email="from@example.com",
-        to=[user.email],
+        to=[user_email],
         headers={"List-Unsubscribe": "<mailto:unsub@example.com>"})
 
     msg.attach_alternative(html, "text/html")

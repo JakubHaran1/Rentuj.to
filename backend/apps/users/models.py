@@ -50,6 +50,7 @@ class User(AbstractUser):
     last_login = models.DateTimeField(null=True)
     created = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=False)
+    new_email = models.EmailField(max_length=254, null=True)
     objects = UserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name", "second_name", "birth_date"]

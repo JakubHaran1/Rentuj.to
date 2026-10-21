@@ -11,10 +11,13 @@ type LoginCredentialsType = {
 type UserRoleType = "OWNER" | "RENTER";
 
 type UserType = {
+  id: string;
   name: string;
+  second_name: string;
+  email: string;
   user_type: UserRoleType;
   // TODO: usunac nulla
-  avatar: string | FileList;
+  avatar: FileList;
   last_login: string;
   created: string;
 };
@@ -30,6 +33,12 @@ type RegisterUserType = {
   user_type?: UserRoleType;
 };
 
+type EditUserType = Pick<
+  RegisterUserType,
+  "name" | "second_name" | "email" | "password" | "confirm_password"
+> & {
+  avatar?: FileList;
+};
 type UserResponseType = accessTokenType & {
   user: UserType;
 };
@@ -49,6 +58,7 @@ export type {
   LoginCredentialsType,
   UserRoleType,
   UserType,
+  EditUserType,
   RegisterUserType,
   UserResponseType,
   DrfErrorBodyType,

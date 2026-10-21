@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import { AuthService } from "../../services/authService";
 import { useState } from "react";
+
 function ThanksPage() {
   const [detail, setDetail] = useState("");
   const [activationError, setActivationError] = useState<null | string>(null);
@@ -11,42 +12,44 @@ function ThanksPage() {
     e.preventDefault();
     try {
       if (!uidb64 || !token)
-        throw new Error("Your account acctivation has been failed");
+        throw new Error("The email address could not be verified.");
       const data = await AuthService.activeAccount(uidb64, token);
       setDetail(data.detail);
       setActivationError(null);
     } catch {
-      setActivationError("Your account acctivation has been failed");
+      setActivationError(
+        "The email address could not be verified. The link may be invalid or expired.",
+      );
       setDetail("");
     }
   };
   return (
-    <section className="rounded-xl border border-[#c2c9d2] bg-[#e9edf2] mt-20 mx-auto p-4  shadow-sm dark:border-slate-800 dark:bg-slate-900 md:w-sm lg:w-xl  ">
-      {activationError ?? (
+    <section className="mx-auto mt-20 max-w-xl rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+      <h1 className="text-2xl font-semibold text-[#16324f] dark:text-white">
+        Verify your email address
+      </h1>
+      {activationError ? (
         <p className="mt-4 text-sm text-red-600" role="alert">
           {activationError}
         </p>
-      )}
-      <div>
-        <p className="text-md font-semibold text-[#2e8b57]">
-          Your accont has been successfully created
-        </p>
-        <p className="mt-4 max-w-xl leading-7 text-[#6b7280] dark:text-slate-300">
-          Now you can login to your account.
-        </p>
-      </div>
-      {!detail ? (
-        <form
-          onSubmit={(e: React.SubmitEvent<HTMLFormElement>) =>
-            onActivationClick(e)
-          }
+      ) : detail ? (
+        <p
+          className="mt-4 leading-7 text-[#6b7280] dark:text-slate-300"
+          role="status"
         >
-          <Button className="mt-5 py-3">Active your account</Button>
-        </form>
+          Your email address has been verified.
+        </p>
       ) : (
-        <Button to="/" className="mt-5 py-3">
-          Go to Homepage
-        </Button>
+        <p className="mt-4 leading-7 text-[#6b7280] dark:text-slate-300">
+          Select the button below to verify this email address.
+        </p>
+      )}
+      {!detail && !activationError && (
+        <form
+          onSubmit={onActivationClick}
+        >
+          <Button className="mt-5">Verify email address</Button>
+        </form>
       )}
     </section>
   );

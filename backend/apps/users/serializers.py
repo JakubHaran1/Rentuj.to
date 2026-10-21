@@ -34,11 +34,21 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["name", "user_type", "avatar", "last_login", "created"]
+        fields = ["id", "name", "second_name", "email", "user_type",
+                  "avatar", "last_login", "created"]
+
+
+class UserUpdateSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ["name", "second_name", "email", "user_type",
+                  "avatar", "last_login", "created"]
 
 
 class UserCreateSerializer(ModelSerializer):
-    confirm_password = CharField(write_only=True)
+    password = CharField(write_only=True, required=False)
+    confirm_password = CharField(write_only=True, required=False)
     avatar = ImageField(write_only=True, required=False)
 
     # def validate_birth_date(self, val):
@@ -64,9 +74,14 @@ class UserCreateSerializer(ModelSerializer):
         }
 
     def create(self, validated_data) -> User:
-        password = validated_data.pop("password")
-        confirm_password = validated_data.pop("confirm_password")
+        password = validated_data.pop("password", None)
+        confirm_password = validated_data.pop("confirm_password", None)
         avatar_data = validated_data.pop("avatar")
+        if not password:
+            raise ValidationError({"password": "This field is required."})
+        if confirm_password is None:
+            raise ValidationError(
+                {"confirm_password": "This field is required."})
         if password != confirm_password:
             raise ValidationError(
                 {"confirm_password": "Confirm password isn't correct!"})
@@ -97,31 +112,41 @@ class UserCreateSerializer(ModelSerializer):
         return user
 
     def update(self, instance: User, validated_data: dict) -> User:
-        password = validated_data.pop("password")
-        confirm_password = validated_data.pop("confirm_password")
-        avatar_data = validated_data.pop("avatar")
+        password = validated_data.pop("password", None)
+        confirm_password = validated_data.pop("confirm_password", None)
+        avatar_data = validated_data.pop("avatar", None)
+        email = validated_data.pop("email", None)
 
-        if password != confirm_password:
-            raise ValidationError({
-                "confirm_password": "Confirm password isn't correct!"})
+        if password is not None or confirm_password is not None:
+            if not password:
+                raise ValidationError({"password": "Password is required."})
+            if password != confirm_password:
+                raise ValidationError({
+                    "confirm_password": "Confirm password isn't correct!"})
 
-        instance.set_password(password)
+            instance.set_password(password)
 
-        for key, value in validated_data:
+        if email is not None:
+            instance.new_email = email if email != instance.email else None
+
+        new_img = validated_data.pop("avatar", None)
+        if new_img is not None:
+            old_img = instance.img
+            old_img.seek(0)
+            old_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
+            new_img.seek(0)
+            new_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
+
+            if (old_hash != new_hash):
+                for avatar in avatar_data:
+                    serializer = UserImgSerializer.create(data=avatar)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(user=instance)
+
+        for key, value in validated_data.items():
             setattr(instance, key, value)
 
-        old_img = instance["img"]
-        old_img.seek(0)
-        old_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
-        new_img = validated_data["img"]
-        new_img.seek(0)
-        new_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
-
-        if (old_hash != new_hash):
-            for avatar in avatar_data:
-                serializer = UserImgSerializer.create(data=avatar)
-                serializer.is_valid(raise_exception=True)
-                serializer.save(user=instance)
+        instance.save()
 
         return instance
 

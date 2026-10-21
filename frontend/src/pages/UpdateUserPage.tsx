@@ -1,13 +1,121 @@
+import { useForm } from "react-hook-form";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import { useUserContext } from "../components/context/UserContext";
+import type { EditUserType } from "../types";
+import { AuthService } from "../services/authService";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const editableFields = [
+  "name",
+  "second_name",
+  "email",
+  "avatar",
+  "password",
+  "confirm_password",
+] as const;
+type EditableField = (typeof editableFields)[number];
 
 function UpdateUserPage() {
+  const [formState, setFormState] = useState<"email" | "" | "success">("");
+  const { user } = useUserContext();
+  const updateForm = useForm<EditUserType>({
+    defaultValues: {
+      name: user?.name ?? "",
+      second_name: user?.second_name ?? "",
+      email: user?.email ?? "",
+      password: "",
+      confirm_password: "",
+    },
+  });
+  const { reset } = updateForm;
+
+  // Reset form state
+  useEffect(() => {
+    if (!user) return;
+    console.log(user.second_name);
+    reset({
+      name: user.name,
+      second_name: user.second_name,
+      email: user.email,
+      password: "",
+      confirm_password: "",
+    });
+  }, [user, reset]);
+
+  const onSumbitEdit = async (editData: EditUserType) => {
+    const userId = user?.id;
+    if (!userId) {
+      updateForm.setError("root.server", {
+        type: "server",
+        message: "No user",
+      });
+      return;
+    }
+    try {
+      const { password, confirm_password, ...profileData } = editData;
+      const dataToSend =
+        password || confirm_password
+          ? { ...profileData, password, confirm_password }
+          : profileData;
+      await AuthService.editUserData(dataToSend, userId);
+      setFormState(editData.email !== user.email ? "email" : "success");
+    } catch (error: unknown) {
+      // First check if error was an axios response, if not it would be a connection problem
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data;
+        // second check if error is an object, if not server would receives some response but some error occures
+
+        if (data && typeof data === "object") {
+          Object.entries(data).forEach(([key, value]) => {
+            // check if key_name of error is in editable fields - if yes it is normal model drf error with field but when not, it would be error for whole form or general message
+
+            if (editableFields.includes(key as EditableField)) {
+              // if value is an array it means there were more errors with this field
+              if (typeof value === "string") {
+                updateForm.setError(key as EditableField, {
+                  type: "server",
+                  message: value,
+                });
+              } else if (Array.isArray(value)) {
+                updateForm.setError(key as EditableField, {
+                  type: "server",
+                  message: value.join(", "),
+                });
+              }
+            } else if (
+              (key === "detail" || key === "non_field_errors") &&
+              (typeof value === "string" || Array.isArray(value))
+            ) {
+              updateForm.setError("root.server", {
+                type: "server",
+                message: Array.isArray(value) ? value.join(", ") : value,
+              });
+            }
+          });
+        } else {
+          updateForm.setError("root.server", {
+            type: "server",
+            message: error.response
+              ? "Unable to update your profile. Please check the entered data."
+              : "Unable to connect. Please try again.",
+          });
+        }
+      } else {
+        updateForm.setError("root.server", {
+          type: "server",
+          message: "An unexpected error occurred. Please try again.",
+        });
+      }
+    }
+  };
   return (
     <section className="mx-auto my-10 max-w-4xl rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-sm sm:my-14 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
       <header className="border-b border-[#c2c9d2] pb-6 dark:border-slate-700">
         <p className="text-sm font-semibold text-[#2e8b57]">Your account</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#16324f] sm:text-3xl dark:text-white">
-          Edit profile
+          Edit profile {user?.id}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b7280] dark:text-slate-300">
           Update your personal details and the information shown on your
@@ -15,7 +123,19 @@ function UpdateUserPage() {
         </p>
       </header>
 
-      <form className="mt-6">
+      <form className="mt-6" onSubmit={updateForm.handleSubmit(onSumbitEdit)}>
+        {updateForm.formState.errors.root?.server && (
+          <p className="mb-4 text-sm text-red-600" role="alert">
+            {updateForm.formState.errors.root.server.message}
+          </p>
+        )}
+        {formState && (
+          <p className="mb-4 text-sm text-green-700" role="status">
+            {formState === "email"
+              ? "A confirmation link was sent to your new email address. Your account email will change after confirmation."
+              : "Profile updated successfully."}
+          </p>
+        )}
         <section
           aria-labelledby="profile-photo-heading"
           className="border-b border-[#c2c9d2] pb-6 dark:border-slate-700"
@@ -37,8 +157,10 @@ function UpdateUserPage() {
             <div className="w-full max-w-md">
               <Input
                 accept="image/*"
+                error={updateForm.formState.errors.avatar?.message}
                 label="Choose a profile photo"
                 type="file"
+                {...updateForm.register("avatar")}
               />
               <p className="mt-2 text-xs text-[#6b7280] dark:text-slate-400">
                 JPG, PNG or GIF.
@@ -47,10 +169,7 @@ function UpdateUserPage() {
           </div>
         </section>
 
-        <section
-          aria-labelledby="personal-details-heading"
-          className="mt-6"
-        >
+        <section aria-labelledby="personal-details-heading" className="mt-6">
           <h2
             className="text-lg font-semibold text-[#16324f] dark:text-white"
             id="personal-details-heading"
@@ -60,43 +179,39 @@ function UpdateUserPage() {
           <div className="mt-2 grid gap-x-6 sm:grid-cols-2">
             <Input
               autoComplete="given-name"
+              error={updateForm.formState.errors.name?.message}
               label="First name"
-              name="name"
               placeholder="Your first name"
+              {...updateForm.register("name")}
             />
             <Input
               autoComplete="family-name"
+              error={updateForm.formState.errors.second_name?.message}
               label="Last name"
-              name="second_name"
               placeholder="Your last name"
+              {...updateForm.register("second_name")}
             />
             <Input
               autoComplete="email"
+              error={updateForm.formState.errors.email?.message}
               label="Email address"
-              name="email"
               placeholder="you@example.com"
               type="email"
+              {...updateForm.register("email")}
             />
             <Input
-              autoComplete="bday"
-              label="Birth date"
-              name="birth_date"
-              type="date"
+              error={updateForm.formState.errors.password?.message}
+              label="Password"
+              type="password"
+              {...updateForm.register("password")}
             />
-            <label className="mt-4 block text-sm font-medium text-[#1f2937] dark:text-slate-200">
-              Account type
-              <select
-                className="mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                defaultValue=""
-                name="user_type"
-              >
-                <option disabled value="">
-                  Select account type
-                </option>
-                <option value="RENTER">Renter</option>
-                <option value="OWNER">Owner</option>
-              </select>
-            </label>
+
+            <Input
+              error={updateForm.formState.errors.confirm_password?.message}
+              label="Confirm Password"
+              type="password"
+              {...updateForm.register("confirm_password")}
+            />
           </div>
         </section>
 
@@ -104,7 +219,7 @@ function UpdateUserPage() {
           <Button className="w-full sm:w-auto" to="/" variant="secondary">
             Cancel
           </Button>
-          <Button className="w-full sm:w-auto" type="button">
+          <Button className="w-full sm:w-auto" type="submit">
             Save changes
           </Button>
         </div>
