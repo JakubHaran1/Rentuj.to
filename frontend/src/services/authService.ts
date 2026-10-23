@@ -10,15 +10,23 @@ import type {
 
 export const AuthService = {
   async login(
-    loginCredentials: LoginCredentialsType,
+    loginCredentials: LoginCredentialsType | null = null,
   ): Promise<UserResponseType> {
-    const resp = await publicApi.post<UserResponseType>(
-      "/users/token",
-      loginCredentials,
-    );
-    localStorage.setItem("access", resp.data.access);
-    localStorage.setItem("refresh", resp.data.refresh);
-    return resp.data;
+    if (loginCredentials) {
+      const resp = await publicApi.post<UserResponseType>(
+        "/users/token",
+        loginCredentials,
+      );
+      if (!resp.data.access || !resp.data.refresh) {
+        throw new Error("The login response did not include both tokens.");
+      }
+      localStorage.setItem("access", resp.data.access);
+      localStorage.setItem("refresh", resp.data.refresh);
+      return resp.data;
+    } else {
+      const resp = await privateApi.get<UserResponseType["user"]>("/users/me");
+      return { user: resp.data };
+    }
   },
   logout() {
     localStorage.removeItem("access");
@@ -88,6 +96,10 @@ export const AuthService = {
       }
     });
     const resp = await privateApi.patch(`/users/${userId}`, formData);
+    return resp.data;
+  },
+  async resendActivationLink(uidb64: string): Promise<{ detail: string }> {
+    const resp = await publicApi.post(`users/activate/${uidb64}`);
     return resp.data;
   },
 };

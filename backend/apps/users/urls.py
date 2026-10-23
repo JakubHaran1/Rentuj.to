@@ -8,6 +8,8 @@ from .views import (
     activate_account,
     change_password,
     forget_password,
+    resend_verification_link,
+    return_logged_user
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -27,4 +29,15 @@ urlpatterns = [
         activate_account,
         name="activate-account",
     ),
+    path(
+        "activate/<uidb64>",
+        resend_verification_link,
+        name="resend-verification-link",
+    ),
+    path(
+        "me",
+        return_logged_user,
+        name="me",
+    ),
+
 ] + router.urls

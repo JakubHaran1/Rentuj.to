@@ -10,14 +10,15 @@ import ThanksPage from "./pages/static_pages/ThanksPage";
 import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
 import UpdateUserPage from "./pages/UpdateUserPage";
 import { useUserContext } from "./components/context/UserContext";
-import type { UserType } from "./types";
+import type { UserResponseType } from "./types";
+import { AuthService } from "./services/authService";
 
 function RequireAuth({
   children,
   user,
 }: {
   children: ReactNode;
-  user: UserType | undefined;
+  user: UserResponseType["user"] | undefined;
 }) {
   const accessToken = window.localStorage.getItem("access");
 
@@ -25,10 +26,19 @@ function RequireAuth({
 }
 
 function App() {
-  const { user } = useUserContext();
+  const { user, setUser } = useUserContext();
   const [isDarkMode, setIsDarkMode] = useState(
     () => window.localStorage.getItem("theme") === "dark",
   );
+
+  useEffect(() => {
+    async function loginTrigger() {
+      const resp = await AuthService.login();
+      setUser(resp.user);
+    }
+
+    loginTrigger();
+  }, [setUser]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
@@ -46,10 +56,7 @@ function App() {
             path="/activate-account/:uidb64/:token"
             element={<ThanksPage />}
           />
-          <Route
-            path="/verify-email/:uidb64/:token"
-            element={<ThanksPage />}
-          />
+          <Route path="/verify-email/:uidb64/:token" element={<ThanksPage />} />
           <Route
             path="/password-reset/:uidb64/:token"
             element={<PasswordChangePage />}

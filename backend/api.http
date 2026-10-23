@@ -19,12 +19,13 @@ Content-Type: application/json
 }
 ###
 
-POST http://127.0.0.1:8000/api/users/token
+POST http://127.0.0.1:8000/api/users/me
 Content-Type: application/json
+Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkyNzg5Nzc1LCJpYXQiOjE3OTI3ODk0NzUsImp0aSI6ImVjZjgzOThkNjU5MjQ2Yzk5MGJiYWEyZGRmMmNjZjUzIiwidXNlcl9pZCI6IjVlOWFkNzAwLWI3NmMtNGU1Zi04NjlhLTA2ZmJkYjExNTI1NyJ9.dwA127U6LF2mYNFYMbWTT88vt-SGV7uupUOXmhVSlUk"
 
 {
-  "email": "jakub2haran@gmail.com",
-  "password": "dev"
+  "email": "adminadmin223@wp.pl",
+  "password": "Zcadqe13"
 }
 ###
 POST http://127.0.0.1:8000/api/users/token/refresh

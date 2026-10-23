@@ -10,18 +10,6 @@ type LoginCredentialsType = {
 
 type UserRoleType = "OWNER" | "RENTER";
 
-type UserType = {
-  id: string;
-  name: string;
-  second_name: string;
-  email: string;
-  user_type: UserRoleType;
-  // TODO: usunac nulla
-  avatar: FileList;
-  last_login: string;
-  created: string;
-};
-
 type RegisterUserType = {
   name: string;
   second_name: string;
@@ -39,8 +27,21 @@ type EditUserType = Pick<
 > & {
   avatar?: FileList;
 };
-type UserResponseType = accessTokenType & {
-  user: UserType;
+
+type UserResponseType = {
+  user: {
+    id: string;
+    name: string;
+    second_name: string;
+    email: string;
+    user_type: UserRoleType;
+    // TODO: usunac nulla
+    avatar: FileList;
+    last_login: string;
+    created: string;
+  };
+  access?: string;
+  refresh?: string;
 };
 
 type DrfErrorBodyType = {
@@ -57,7 +58,6 @@ export type {
   accessTokenType,
   LoginCredentialsType,
   UserRoleType,
-  UserType,
   EditUserType,
   RegisterUserType,
   UserResponseType,

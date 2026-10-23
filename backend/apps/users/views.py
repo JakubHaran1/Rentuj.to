@@ -8,14 +8,14 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_http_methods
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
-
-from common import email_generation, user_password_reset_token_generator
+from common import email_generation, user_password_reset_token_generator, activation_token_generator
 from .serializers import (
     PasswordResetRequestSerializer,
     UserCreateSerializer,
@@ -43,7 +43,8 @@ class UserViewSet(ModelViewSet):
             "users/activation_email.html",
             "users/activation_email.txt",
             "Welcome in Rentuj.to, thank you for creating a user account",
-            "activate-account"
+            "activate-account",
+            token_generator=activation_token_generator
         )
 
     def update(self, request: Request, *args, **kwargs):
@@ -110,7 +111,6 @@ def forget_password(request: Request) -> Response:
     """send a message to reset password"""
     serializer = PasswordResetRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    # add quering here
     user = User.objects.filter(
         email=serializer.validated_data["email"]).first()
 
@@ -134,7 +134,7 @@ def forget_password(request: Request) -> Response:
 
 @api_view(["POST"])
 def change_password(
-    request: HttpRequest,
+    request: Request,
     uidb64: str,
     token: str,
 ) -> HttpResponse:
@@ -152,9 +152,34 @@ def change_password(
         return Response({'detail': "Activation link isn't correct"}, status=404)
 
     if password != confirm:
-        return Response({'detail': "Password and confirm password aren't correct"}, status=202)
+        return Response({'detail': "Password and confirm password aren't correct"}, status=404)
 
     user.set_password(password)
     user.save()
 
     return Response({'detail': "Your password has been changed"}, status=200)
+
+
+@api_view(["POST"])
+def resend_verification_link(request: Request, uidb64: str) -> Response:
+    try:
+        user_id = force_str(urlsafe_base64_decode(uidb64))
+        email_generation(
+            request,
+            user_id,
+            "users/activation_email.html",
+            "users/activation_email.txt",
+            "Welcome in Rentuj.to, thank you for creating a user account",
+            "activate-account",
+            token_generator=activation_token_generator
+        )
+        return Response(
+            {"detail": "If an account with that email exists, a reset link has been sent."}, status=200)
+    except (ValidationError, TypeError, ValueError, User.DoesNotExist):
+        return Response({"detail", "We can not resend your email"})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def return_logged_user(request: Request) -> Response:
+    return Response(UserSerializer(request.user).data)

@@ -26,6 +26,16 @@ if TYPE_CHECKING:
     from rest_framework.request import Request
 
 
+class ActivationTokenGenerator(PasswordResetTokenGenerator):
+    key_salt = "apps.users.activation_token_generator"
+
+    def _make_hash_value(self, user, timestamp):
+        return f"{super()._make_hash_value(user, timestamp)}{user.is_active}"
+
+
+activation_token_generator = ActivationTokenGenerator()
+
+
 class UserPasswordResetTokenGenerator(PasswordResetTokenGenerator):
     key_salt = "apps.users.password_reset_token_generator"
 
@@ -45,7 +55,7 @@ def create_path(instance, filename: str):
 
 def email_generation(
     request: Request,
-    uidb64: UUID,
+    uidb: UUID,
     html_template: str,
     txt_template: str,
     subject: str,
@@ -57,7 +67,7 @@ def email_generation(
     # TODO  implement re-send email on button
     """Reusable sending email function"""
     user_model = apps.get_model("users", "User")
-    user = user_model.objects.get(id=uidb64)
+    user = user_model.objects.get(id=uidb)
     token = token_generator.make_token(user)
     encoded_user_id = urlsafe_base64_encode(force_bytes(user.pk))
     user_email = user.email if to_email is None else to_email

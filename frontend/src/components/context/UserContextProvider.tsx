@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { UserContext } from "./UserContext";
 import type { ReactNode } from "react";
-import type { UserType } from "../../types";
+import type { UserResponseType } from "../../types";
 
 export function UserContextProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserType | undefined>(undefined);
+  const [user, setUser] = useState<UserResponseType["user"] | undefined>(
+    undefined,
+  );
   const contextValue = useMemo(() => ({ user, setUser }), [user]);
 
   useEffect(() => {
