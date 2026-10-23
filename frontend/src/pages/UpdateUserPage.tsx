@@ -17,6 +17,10 @@ const editableFields = [
 ] as const;
 type EditableField = (typeof editableFields)[number];
 
+const comparableField = ["name", "second_name", "email"] as const;
+
+type ComparableField = (typeof comparableField)[number];
+
 function UpdateUserPage() {
   const [formState, setFormState] = useState<"email" | "" | "success">("");
   const { user } = useUserContext();
@@ -54,11 +58,31 @@ function UpdateUserPage() {
       return;
     }
     try {
-      const { password, confirm_password, ...profileData } = editData;
+      const { password, confirm_password, avatar, ...profileData } = editData;
+
+      const dataToCompare: Partial<Pick<EditUserType, ComparableField>> = {};
+
+      for (const field of comparableField) {
+        const value = user[field];
+        if (value !== profileData[field]) {
+          dataToCompare[field] = profileData[field];
+        }
+      }
+
       const dataToSend =
         password || confirm_password
           ? { ...profileData, password, confirm_password }
-          : profileData;
+          : { avatar, ...dataToCompare };
+      console.log(avatar);
+      if (avatar?.length == 0 && Object.values(dataToSend).length === 1) {
+        updateForm.setError("root.server", {
+          type: "server",
+          message: "Your data are the same!",
+        });
+        setFormState("");
+        return;
+      }
+      console.log(dataToSend);
       await AuthService.editUserData(dataToSend, userId);
       setFormState(editData.email !== user.email ? "email" : "success");
     } catch (error: unknown) {
@@ -78,19 +102,28 @@ function UpdateUserPage() {
                   type: "server",
                   message: value,
                 });
-              } else if (Array.isArray(value)) {
+              }
+
+              if (Array.isArray(value)) {
+                const error_arr: string[] = [];
+                value.forEach((el) => error_arr.push(el));
                 updateForm.setError(key as EditableField, {
                   type: "server",
-                  message: value.join(", "),
+                  message: error_arr.join(",\n "),
                 });
               }
             } else if (
               (key === "detail" || key === "non_field_errors") &&
               (typeof value === "string" || Array.isArray(value))
             ) {
+              const error_arr = [];
+
+              if (typeof value === "string") error_arr.push(value);
+              if (Array.isArray(value)) error_arr.push(value);
+
               updateForm.setError("root.server", {
                 type: "server",
-                message: Array.isArray(value) ? value.join(", ") : value,
+                message: error_arr.join(",\n "),
               });
             }
           });
@@ -115,7 +148,7 @@ function UpdateUserPage() {
       <header className="border-b border-[#c2c9d2] pb-6 dark:border-slate-700">
         <p className="text-sm font-semibold text-[#2e8b57]">Your account</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#16324f] sm:text-3xl dark:text-white">
-          Edit profile {user?.id}
+          Edit profile
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b7280] dark:text-slate-300">
           Update your personal details and the information shown on your
@@ -200,6 +233,7 @@ function UpdateUserPage() {
               {...updateForm.register("email")}
             />
             <Input
+              autoComplete="new-password"
               error={updateForm.formState.errors.password?.message}
               label="Password"
               type="password"
@@ -207,6 +241,7 @@ function UpdateUserPage() {
             />
 
             <Input
+              autoComplete="new-password"
               error={updateForm.formState.errors.confirm_password?.message}
               label="Confirm Password"
               type="password"
