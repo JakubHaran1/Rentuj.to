@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import { AuthService } from "../../services/authService";
 import { useState } from "react";
+import axios from "axios";
 
 function ThanksPage() {
   const [detail, setDetail] = useState("");
@@ -16,7 +17,10 @@ function ThanksPage() {
       const data = await AuthService.activeAccount(uidb64, token);
       setDetail(data.detail);
       setActivationError(null);
-    } catch {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data;
+      }
       setActivationError(
         "The email address could not be verified. The link may be invalid or expired.",
       );
@@ -45,9 +49,7 @@ function ThanksPage() {
         </p>
       )}
       {!detail && !activationError && (
-        <form
-          onSubmit={onActivationClick}
-        >
+        <form onSubmit={onActivationClick}>
           <Button className="mt-5">Verify email address</Button>
         </form>
       )}
