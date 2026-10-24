@@ -101,13 +101,14 @@ class UserCreateSerializer(ModelSerializer):
                     4000,
                     4000,
                 )
+                print("a", converted_avatar.name)
             except ValueError as err:
                 raise ValidationError("avatar", str(err))
 
-        UserImg.objects.create(
-            user=user,
-            img=converted_avatar,
-        )
+            UserImg.objects.create(
+                user=user,
+                img=converted_avatar,
+            )
 
         return user
 
@@ -129,19 +130,34 @@ class UserCreateSerializer(ModelSerializer):
         if email is not None:
             instance.new_email = email if email != instance.email else None
 
-        new_img = validated_data.pop("avatar", None)
-        if new_img is not None:
-            old_img = instance.img
-            old_img.seek(0)
-            old_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
-            new_img.seek(0)
-            new_hash = hashlib.sha256(old_img.getvalue()).hexdigest()
+        if avatar_data:
 
-            if (old_hash != new_hash):
-                for avatar in avatar_data:
-                    serializer = UserImgSerializer.create(data=avatar)
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save(user=instance)
+            old_img = UserImg.objects.filter(
+                user=instance).order_by("-id").first()
+
+            if old_img:
+                old_img.img.open("rb")
+                old_hash = hashlib.sha256(old_img.img.read()).hexdigest()
+                old_img.img.close()
+
+                avatar_data.seek(0)
+                new_hash = hashlib.sha256(avatar_data.read()).hexdigest()
+
+                if (old_hash != new_hash):
+                    print(123)
+                    avatar_data.seek(0)
+                    converted_avatar = save_img(avatar_data.name,
+                                                avatar_data,
+                                                (512, 512),
+                                                4000,
+                                                4000,)
+                    UserImg.objects.create(user=instance,
+                                           img=converted_avatar)
+            else:
+                converted_avatar = save_img(
+                    avatar_data.name, avatar_data, (512, 512), 4000, 4000,)
+                UserImg.objects.create(user=instance,
+                                       img=converted_avatar)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)

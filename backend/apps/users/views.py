@@ -58,6 +58,7 @@ class UserViewSet(ModelViewSet):
             raise ValidationError({"detail": "you can edit your profil only"})
 
         response = super().update(request, *args, **kwargs)
+        instance.refresh_from_db()
 
         if email_change_requested and instance.new_email:
             email_generation(

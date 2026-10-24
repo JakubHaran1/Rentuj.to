@@ -1,12 +1,12 @@
 # Import only type for idle to import analyze
 from __future__ import annotations
-from config.settings import FRONTEND_URL
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import UUID
 from PIL import Image
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.tokens import (
     PasswordResetTokenGenerator,
     default_token_generator,
@@ -72,7 +72,7 @@ def email_generation(
     encoded_user_id = urlsafe_base64_encode(force_bytes(user.pk))
     user_email = user.email if to_email is None else to_email
     if link_template is None:
-        link = f"{FRONTEND_URL}/{route_name}/{encoded_user_id}/{token}"
+        link = f"{settings.FRONTEND_URL}/{route_name}/{encoded_user_id}/{token}"
     else:
         # TODO: ADD "IF" ONE LEVEL BEFORE AND CHECK LINK_NEDED - THEN ADD WORKFLOW WITHOUT USER_ID AND TOKEN - ONLY LINK TEMPLATE
         link = link_template.format(uidb64=encoded_user_id, token=token)
@@ -106,10 +106,11 @@ def save_img(file_name: str, file_field: UploadedFile, size: tuple, max_w: int, 
                     "You may upload only an image with jpg, png or webp extension")
             im.thumbnail(size)
             buffer = BytesIO()
+
             im.save(buffer, format="WEBP", quality=85)
             buffer.seek(0)
-
-            return ContentFile(buffer.read(), name=new_path)
+            converted_img = ContentFile(buffer.read(), name=new_path)
+            return converted_img
 
     except (Image.UnidentifiedImageError, OSError):
         raise ValueError("Image file is incorrect")
