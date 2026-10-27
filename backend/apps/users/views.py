@@ -1,12 +1,9 @@
-from django.contrib.auth.forms import SetPasswordForm
 from django.core.exceptions import ValidationError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.db.models import QuerySet
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-from django.views.decorators.http import require_http_methods
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
@@ -50,12 +47,13 @@ class UserViewSet(ModelViewSet):
     def update(self, request: Request, *args, **kwargs):
         instance = self.get_object()
 
+        if instance.id != request.user.pk:
+            raise ValidationError({"detail": "you can edit your profil only"})
+
         email_change_requested = (
             request.data.get("email") is not None
             and request.data.get("email") != instance.email
         )
-        if instance.id != request.user.pk:
-            raise ValidationError({"detail": "you can edit your profil only"})
 
         response = super().update(request, *args, **kwargs)
         instance.refresh_from_db()

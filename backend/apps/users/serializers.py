@@ -73,7 +73,7 @@ class UserCreateSerializer(ModelSerializer):
             "confirm_password": {"write_only": True},
         }
 
-    def create(self, validated_data) -> User:
+    def create(self, validated_data: dict) -> User:
         password = validated_data.pop("password", None)
         confirm_password = validated_data.pop("confirm_password", None)
         avatar_data = validated_data.pop("avatar")
