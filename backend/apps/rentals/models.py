@@ -20,14 +20,16 @@ class PropertyDetail(models.Model):
     property = models.OneToOneField(
         Property, related_name="property_details", on_delete=models.CASCADE)
     owner = models.ForeignKey(
-        User, related_name="properties", on_delete=models.CASCADE, null=True)
+        User, related_name="properties", on_delete=models.CASCADE)
     description = models.CharField(max_length=250, default="", null=True)
     floor_number = models.IntegerField(default=0)
     number_of_levels = models.IntegerField(default=0)
     number_of_rooms = models.IntegerField(default=1)
     square_meters = models.FloatField()
+    price = models.FloatField()
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
+
     # # add auto_now_add=True,
     # date_add = models.DateTimeField(default="")
     # # add auto_now=True,
@@ -35,13 +37,6 @@ class PropertyDetail(models.Model):
 
     def __str__(self):
         return f"{self.property.title}"
-
-
-class LandlordAdvert(models.Model):
-    title = models.CharField(max_length=150)
-    property_details = models.ForeignKey(
-        PropertyDetail, related_name="adverts", on_delete=models.CASCADE)
-    price = models.FloatField()
 
 
 class PropertyImg(models.Model):

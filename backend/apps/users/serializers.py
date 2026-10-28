@@ -34,14 +34,6 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "name", "second_name", "email", "user_type",
-                  "avatar", "last_login", "created"]
-
-
-class UserUpdateSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
         fields = ["name", "second_name", "email", "user_type",
                   "avatar", "last_login", "created"]
 
@@ -77,11 +69,14 @@ class UserCreateSerializer(ModelSerializer):
         password = validated_data.pop("password", None)
         confirm_password = validated_data.pop("confirm_password", None)
         avatar_data = validated_data.pop("avatar")
+
         if not password:
             raise ValidationError({"password": "This field is required."})
+
         if confirm_password is None:
             raise ValidationError(
                 {"confirm_password": "This field is required."})
+
         if password != confirm_password:
             raise ValidationError(
                 {"confirm_password": "Confirm password isn't correct!"})
@@ -144,7 +139,6 @@ class UserCreateSerializer(ModelSerializer):
                 new_hash = hashlib.sha256(avatar_data.read()).hexdigest()
 
                 if (old_hash != new_hash):
-                    print(123)
                     avatar_data.seek(0)
                     converted_avatar = save_img(avatar_data.name,
                                                 avatar_data,
