@@ -1,8 +1,20 @@
 import Search from "../components/common/Search";
 import Map from "../components/common/Map";
 import Button from "../components/common/Button";
+// import { useEffect, useState } from "react";
+// import { PropertiesService } from "../services/propertiesService";
+// import type { PropertyDetailType } from "../types";
 
-function Homepage() {
+function HomePage() {
+  // const [properties, setProperties] = useState<PropertyDetailType[]>([]);
+  // useEffect(() => {
+  //   async function getProperties() {
+  //     const propList = await PropertiesService.getPropertiesList();
+  //     console.log(propList);
+  //     setProperties(propList);
+  //   }
+  //   getProperties();
+  // }, []);
   return (
     <div id="home">
       <section className="grid gap-8 py-12 md:grid-cols-[minmax(0,1fr)_300px] md:items-center md:py-16">
@@ -51,4 +63,4 @@ function Homepage() {
   );
 }
 
-export default Homepage;
+export default HomePage;

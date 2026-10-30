@@ -20,6 +20,13 @@ const recentlyViewed = [
     price: "PLN 2,500",
     imageClass: "listing-cover--three",
   },
+  {
+    location: "Wrocław · Śródmieście",
+    title: "Well-located studio",
+    details: "1 room · 31 m² · available now",
+    price: "PLN 2,500",
+    imageClass: "listing-cover--three",
+  },
 ];
 function RecentlyViewed() {
   return (
@@ -43,7 +50,7 @@ function RecentlyViewed() {
           View all
         </a>
       </div>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {recentlyViewed.map((listing) => (
           <article
             className="overflow-hidden rounded-xl border border-[#c2c9d2] bg-[#e9edf2] dark:border-slate-800 dark:bg-slate-900"

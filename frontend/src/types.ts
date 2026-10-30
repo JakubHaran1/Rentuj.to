@@ -10,6 +10,17 @@ type LoginCredentialsType = {
 
 type UserRoleType = "OWNER" | "RENTER";
 
+type UserType = {
+  id: string;
+  name: string;
+  second_name: string;
+  email: string;
+  user_type: UserRoleType;
+  avatar: string | FileList;
+  last_login: string | null;
+  created: string;
+};
+
 type RegisterUserType = {
   name: string;
   second_name: string;
@@ -29,17 +40,7 @@ type EditUserType = Pick<
 };
 
 type UserResponseType = {
-  user: {
-    id: string;
-    name: string;
-    second_name: string;
-    email: string;
-    user_type: UserRoleType;
-    // TODO: usunac nulla
-    avatar: FileList;
-    last_login: string;
-    created: string;
-  };
+  user: UserType;
   access?: string;
   refresh?: string;
 };
@@ -48,19 +49,48 @@ type DrfErrorBodyType = {
   detail?: unknown;
   non_field_errors?: unknown;
 };
+
 type ConfirmPasswordType = {
   uidb64: string;
   token: string;
   confirm: string;
   password: string;
 };
+type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+type PropertyType = {
+  title: string;
+  city: string;
+  street: string;
+  home_number: number;
+  flat_number: number;
+  floor_number: number;
+};
+
+type PropertyDetailType = {
+  property: PropertyType;
+  owner: UserType;
+  description: string;
+  number_of_levels: number;
+  number_of_rooms: number;
+  square_meters: number;
+  price: number;
+  latitude: number;
+  longitude: number;
+  apartment_photos: string[] | FileList;
+};
+type CreatePropertyDataType = Omit<PropertyDetailType, "owner">;
 export type {
   accessTokenType,
   LoginCredentialsType,
   UserRoleType,
+  UserType,
   EditUserType,
   RegisterUserType,
   UserResponseType,
   DrfErrorBodyType,
   ConfirmPasswordType,
+  AuthStatus,
+  PropertyType,
+  PropertyDetailType,
+  CreatePropertyDataType,
 };

@@ -41,7 +41,7 @@ class PropertyDetailsSerializer(serializers.ModelSerializer):
         fields = [
             "pk",
             "number_of_levels", "number_of_rooms", "latitude",
-            "longitude", "owner", "description", "floor_number", "number_of_levels", "number_of_rooms", "price", "square_meters", "latitude", "longitude",  "apartment_photos"]
+            "longitude", "owner", "description",  "number_of_levels", "number_of_rooms", "price", "square_meters", "latitude", "longitude",  "apartment_photos"]
 
     def create(self, validated_data: dict) -> PropertyDetail:
 

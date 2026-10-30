@@ -22,7 +22,6 @@ class PropertyDetail(models.Model):
     owner = models.ForeignKey(
         User, related_name="properties", on_delete=models.CASCADE)
     description = models.CharField(max_length=250, default="", null=True)
-    floor_number = models.IntegerField(default=0)
     number_of_levels = models.IntegerField(default=0)
     number_of_rooms = models.IntegerField(default=1)
     square_meters = models.FloatField()

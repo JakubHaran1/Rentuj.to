@@ -1,44 +1,25 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import Homepage from "./pages/Homepage";
-import { Navigate, Route, Routes } from "react-router-dom";
-import type { ReactNode } from "react";
-import RecentlyViewed from "./components/main/RecentlyViewed";
-import Header from "./components/main/Header";
-import Fotter from "./components/main/Footer";
+import { Route, Routes } from "react-router-dom";
+
+import HomePage from "./pages/HomePage";
+import UpdateUserPage from "./pages/UpdateUserPage";
+import CreateListing from "./pages/CreateListingPage";
+import MyListingPage from "./pages/MyListingsPage";
+
 import ThanksPage from "./pages/static_pages/ThanksPage";
 import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
-import UpdateUserPage from "./pages/UpdateUserPage";
-import { useUserContext } from "./components/context/UserContext";
-import type { UserResponseType } from "./types";
-import { AuthService } from "./services/authService";
 
-function RequireAuth({
-  children,
-  user,
-}: {
-  children: ReactNode;
-  user: UserResponseType["user"] | undefined;
-}) {
-  const accessToken = window.localStorage.getItem("access");
+import Header from "./components/main/Header";
+import RecentlyViewed from "./components/main/RecentlyViewed";
+import Fotter from "./components/main/Footer";
 
-  return user || accessToken ? children : <Navigate to="/" replace />;
-}
+import RequireAuth from "./components/common/RequireAuth";
 
 function App() {
-  const { user, setUser } = useUserContext();
   const [isDarkMode, setIsDarkMode] = useState(
     () => window.localStorage.getItem("theme") === "dark",
   );
-
-  useEffect(() => {
-    async function loginTrigger() {
-      const resp = await AuthService.login();
-      setUser(resp.user);
-    }
-
-    loginTrigger();
-  }, [setUser]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
@@ -51,7 +32,7 @@ function App() {
 
       <main className="mx-auto w-[min(90%,1440px)]">
         <Routes>
-          <Route path="/" element={<Homepage />} />
+          <Route path="/" element={<HomePage />} />
           <Route
             path="/activate-account/:uidb64/:token"
             element={<ThanksPage />}
@@ -61,14 +42,11 @@ function App() {
             path="/password-reset/:uidb64/:token"
             element={<PasswordChangePage />}
           />
-          <Route
-            path="/profile/edit"
-            element={
-              <RequireAuth user={user}>
-                <UpdateUserPage />
-              </RequireAuth>
-            }
-          />
+          <Route element={<RequireAuth />}>
+            <Route path="/profile/edit" element={<UpdateUserPage />} />
+            <Route path="/listing-create" element={<CreateListing />} />
+            <Route path="/my-listings" element={<MyListingPage />} />
+          </Route>
         </Routes>
 
         <RecentlyViewed />

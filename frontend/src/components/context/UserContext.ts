@@ -1,10 +1,11 @@
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { UserResponseType } from "../../types";
+import type { AuthStatus, UserType } from "../../types";
 
 export type UserContextType = {
-  user: UserResponseType["user"] | undefined;
-  setUser: Dispatch<SetStateAction<UserResponseType["user"] | undefined>>;
+  user: UserType | undefined;
+  setUser: Dispatch<SetStateAction<UserType | undefined>>;
+  authStatus: AuthStatus;
 };
 
 export const UserContext = createContext<UserContextType | undefined>(

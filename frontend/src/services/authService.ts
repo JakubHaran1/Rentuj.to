@@ -4,6 +4,7 @@ import type {
   LoginCredentialsType,
   RegisterUserType,
   UserResponseType,
+  UserType,
   ConfirmPasswordType,
   EditUserType,
 } from "../types";
@@ -24,7 +25,7 @@ export const AuthService = {
       localStorage.setItem("refresh", resp.data.refresh);
       return resp.data;
     } else {
-      const resp = await privateApi.get<UserResponseType["user"]>("/users/me");
+      const resp = await privateApi.get<UserType>("/users/me");
       return { user: resp.data };
     }
   },
@@ -98,6 +99,7 @@ export const AuthService = {
     const resp = await privateApi.patch(`/users/${userId}`, formData);
     return resp.data;
   },
+
   async resendActivationLink(uidb64: string): Promise<{ detail: string }> {
     const resp = await publicApi.post(`users/activate/${uidb64}`);
     return resp.data;

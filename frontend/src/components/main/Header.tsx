@@ -5,6 +5,7 @@ import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 import AccountMenu from "./AccountMenu";
 import { useUserContext } from "../context/UserContext";
+import { Link } from "react-router-dom";
 
 type HeaderProps = {
   isDarkMode: boolean;
@@ -32,42 +33,52 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
           className="order-3 flex w-full items-center gap-6 overflow-x-auto pb-1 text-sm font-medium text-[#6b7280] md:order-none md:w-auto md:pb-0"
           aria-label="Main navigation"
         >
-          <a
+          <Link
             className="whitespace-nowrap text-[#16324f] dark:text-white"
-            href="/"
+            to="/"
           >
             Home
-          </a>
-          <a
-            className="whitespace-nowrap hover:text-[#2f80ed]"
-            href="#my-listings"
+          </Link>
+          <Link
+            className="whitespace-nowrap hover:text-[#2f80ed] dark:text-white"
+            to="/my-listings"
           >
             My listings
-          </a>
-          <a className="whitespace-nowrap hover:text-[#2f80ed]" href="#saved">
+          </Link>
+
+          <Link
+            className="whitespace-nowrap text-[#16324f] dark:text-white"
+            to="#saved"
+          >
             Saved
-          </a>
-          <a
-            className="whitespace-nowrap hover:text-[#2f80ed]"
-            href="#messages"
+          </Link>
+
+          <Link
+            className="whitespace-nowrap text-[#16324f] dark:text-white"
+            to="#messages"
           >
             Messages
-          </a>
-          <a className="whitespace-nowrap hover:text-[#2f80ed]" href="#reviews">
+          </Link>
+
+          <Link
+            className="whitespace-nowrap text-[#16324f] dark:text-white"
+            to="#reviews"
+          >
             Reviews
-          </a>
-          <a
-            className="whitespace-nowrap hover:text-[#2f80ed]"
-            href="#disputes"
+          </Link>
+
+          <Link
+            className="whitespace-nowrap text-[#16324f] dark:text-white"
+            to="#disputes"
           >
             Disputes
-          </a>
-          <a
-            className="whitespace-nowrap hover:text-[#2f80ed]"
-            href="#agreements"
+          </Link>
+          <Link
+            className="whitespace-nowrap text-[#16324f] dark:text-white"
+            to="#agreements"
           >
             Agreements
-          </a>
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -81,7 +92,7 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             {isDarkMode ? "Light mode" : "Dark mode"}
           </button>
           {user ? (
-            <Button to="#create-listing" variant="primary">
+            <Button to="/listing-create" variant="primary">
               Add a listing
             </Button>
           ) : (

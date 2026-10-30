@@ -29,7 +29,9 @@ a {
   padding: 0.5rem 0.875rem;
   color: #1f2937;
   font-size: 0.875rem;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
 }
 
 .filter-chip:hover {
@@ -76,36 +78,45 @@ a {
   transition: transform 150ms ease;
 }
 
-.listing-cover {
-  display: flex;
-  min-height: 11rem;
-  align-items: flex-start;
-  padding: 1rem;
-}
-
-.listing-cover--one {
-  background: linear-gradient(135deg, #e8e4dc 0%, #d8e0dc 55%, #c8d2ce 100%);
-}
-
-.listing-cover--two {
-  background: linear-gradient(135deg, #e8e2d8 0%, #d8d9d1 55%, #c9d3ce 100%);
-}
-
-.listing-cover--three {
-  background: linear-gradient(135deg, #e9e5df 0%, #d6dde3 55%, #cbd5db 100%);
-}
-
 .map-preview {
   position: relative;
   min-height: 18rem;
   overflow: hidden;
   background-color: #eaf0ea;
   background-image:
-    linear-gradient(28deg, transparent 48%, #fff 48%, #fff 51%, transparent 51%),
-    linear-gradient(108deg, transparent 46%, #fff 46%, #fff 49%, transparent 49%),
-    linear-gradient(158deg, transparent 62%, #d6e4d4 62%, #d6e4d4 73%, transparent 73%),
-    linear-gradient(30deg, transparent 20%, #dce8d8 20%, #dce8d8 32%, transparent 32%);
-  background-size: 15rem 12rem, 18rem 16rem, 100% 100%, 100% 100%;
+    linear-gradient(
+      28deg,
+      transparent 48%,
+      #fff 48%,
+      #fff 51%,
+      transparent 51%
+    ),
+    linear-gradient(
+      108deg,
+      transparent 46%,
+      #fff 46%,
+      #fff 49%,
+      transparent 49%
+    ),
+    linear-gradient(
+      158deg,
+      transparent 62%,
+      #d6e4d4 62%,
+      #d6e4d4 73%,
+      transparent 73%
+    ),
+    linear-gradient(
+      30deg,
+      transparent 20%,
+      #dce8d8 20%,
+      #dce8d8 32%,
+      transparent 32%
+    );
+  background-size:
+    15rem 12rem,
+    18rem 16rem,
+    100% 100%,
+    100% 100%;
 }
 
 .map-road {
