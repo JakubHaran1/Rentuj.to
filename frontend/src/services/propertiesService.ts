@@ -1,3 +1,4 @@
+import { privateApi } from "../api/private";
 import { publicApi } from "../api/public";
 import type { CreatePropertyDataType, PropertyDetailType } from "../types";
 
@@ -22,21 +23,31 @@ export const PropertiesService = {
   },
   async createPropertyItem(
     data: CreatePropertyDataType,
-  ): Promise<{ status: number }> {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (typeof value == "string") formData.append(key, value);
-      else if (key == "property")
-        formData.append("property", JSON.stringify(value));
-      else if (value instanceof FileList) {
-        const file = value.item(0);
-        if (file) formData.append(key, file);
-      }
+  ): Promise<void> {
+    const { property, apartment_photos, ...propertyDetails } = data;
+    const resp = await privateApi.post<{
+      property_details: { pk: number };
+    }>("rentals/properties", {
+      ...property,
+      property_details: propertyDetails,
     });
-    const resp = await publicApi.post<{ status: number }>(
-      `rentals/properties/`,
-      formData,
+
+    if (!(apartment_photos instanceof FileList)) return;
+
+    await Promise.all(
+      Array.from(apartment_photos).map((file) => {
+        const formData = new FormData();
+        formData.append(
+          "property_details",
+          String(resp.data.property_details.pk),
+        );
+        formData.append("img", file);
+
+        return privateApi.post(
+          "rentals/property-imgs",
+          formData,
+        );
+      }),
     );
-    return resp;
   },
 };

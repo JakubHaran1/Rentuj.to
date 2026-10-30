@@ -65,6 +65,14 @@ class PropertyImgViewSet(ModelViewSet):
 
         return [AllowAny()]
 
+    def perform_create(self, serializer):
+        property_details = serializer.validated_data["property_details"]
+        if property_details.owner_id != self.request.user.pk:
+            raise PermissionDenied(
+                "You can add images only to your own properties."
+            )
+        serializer.save()
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.owner.pk != self.request.user.pk:

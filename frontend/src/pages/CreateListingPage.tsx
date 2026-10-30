@@ -30,6 +30,7 @@ function CreateListing() {
 
   const onSubmitCreate = async (data: CreateFormState) => {
     const dataToSend = { latitude: 123, longitude: 123, ...data };
+
     const resp = await PropertiesService.createPropertyItem(dataToSend);
     console.log(resp);
   };
@@ -163,16 +164,14 @@ function CreateListing() {
             </legend>
             <Input
               label="Images"
-              name="apartment_photos"
               type="file"
               accept="image/*"
               multiple
+              {...formCreate.register("apartment_photos")}
             />
           </fieldset>
 
-          <Button type="submit" onClick={(e) => e.preventDefault()}>
-            Create listing
-          </Button>
+          <Button type="submit">Create listing</Button>
         </form>
       </section>
     </main>

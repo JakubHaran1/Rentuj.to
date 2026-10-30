@@ -21,10 +21,14 @@ def save_rentals_img(property_img_data: list, property_details: dict):
 
 class PropertyImgSerializer(serializers.ModelSerializer):
     pk = serializers.IntegerField(required=False)
+    property_details = serializers.PrimaryKeyRelatedField(
+        queryset=PropertyDetail.objects.all(),
+        write_only=True,
+    )
 
     class Meta:
         model = PropertyImg
-        fields = ["pk", "img"]
+        fields = ["pk", "img", "property_details"]
 
 
 class PropertyDetailsSerializer(serializers.ModelSerializer):
@@ -61,7 +65,8 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = ["pk", "title", "city", "street",
-                  "home_number", "floor_number",  "property_details"]
+                  "home_number", "flat_number", "floor_number",
+                  "property_details"]
 
     def create(self, validated_data: dict) -> Property:
         property_details_data = validated_data.pop("property_details", {})

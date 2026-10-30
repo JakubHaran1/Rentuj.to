@@ -45,10 +45,18 @@ user_password_reset_token_generator = UserPasswordResetTokenGenerator()
 
 def create_path(instance, filename: str):
     """Create path for imgs"""
+    if hasattr(instance, "user"):
+        obj_id = instance.user.pk
+    elif hasattr(instance, "property_details"):
+        obj_id = instance.property_details.owner.pk
+    else:
+        raise ValueError(
+            f"Cannot determine owner for {instance.__class__.__name__}."
+        )
     return (
         f"{instance._meta.app_label}/"
         f"{instance._meta.model_name}/"
-        f"{instance.user.pk}/"
+        f"{obj_id}/"
         f"{filename}"
     )
 
