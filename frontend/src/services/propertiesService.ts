@@ -1,10 +1,14 @@
 import { privateApi } from "../api/private";
 import { publicApi } from "../api/public";
-import type { CreatePropertyDataType, PropertyDetailType } from "../types";
+import type {
+  CreatePropertyDataType,
+  PropertyDetailType,
+  PropertyListingType,
+} from "../types";
 
 export const PropertiesService = {
-  async getPropertiesList(query_param = ""): Promise<PropertyDetailType[]> {
-    const resp = await publicApi.get<PropertyDetailType[]>(
+  async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
+    const resp = await publicApi.get<PropertyListingType[]>(
       "rentals/properties",
       {
         params: {
@@ -21,9 +25,7 @@ export const PropertiesService = {
     );
     return resp.data;
   },
-  async createPropertyItem(
-    data: CreatePropertyDataType,
-  ): Promise<void> {
+  async createPropertyItem(data: CreatePropertyDataType) {
     const { property, apartment_photos, ...propertyDetails } = data;
     const resp = await privateApi.post<{
       property_details: { pk: number };
@@ -31,7 +33,7 @@ export const PropertiesService = {
       ...property,
       property_details: propertyDetails,
     });
-
+    console.log("img");
     if (!(apartment_photos instanceof FileList)) return;
 
     await Promise.all(
@@ -43,11 +45,9 @@ export const PropertiesService = {
         );
         formData.append("img", file);
 
-        return privateApi.post(
-          "rentals/property-imgs",
-          formData,
-        );
+        return privateApi.post("rentals/property-imgs", formData);
       }),
     );
+    return resp;
   },
 };

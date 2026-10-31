@@ -1,4 +1,4 @@
-import type { PropertyDetailType } from "../types";
+import type { PropertyListingType } from "../types";
 import PropertyBoxes from "../components/common/PropertyBoxes";
 import { useEffect, useState } from "react";
 import { PropertiesService } from "../services/propertiesService";
@@ -6,7 +6,7 @@ import { useUserContext } from "../components/context/UserContext";
 import Button from "../components/common/Button";
 
 function MyListingPage() {
-  const [properties, setProperties] = useState<PropertyDetailType[]>([]);
+  const [properties, setProperties] = useState<PropertyListingType[]>([]);
   const { user } = useUserContext();
   useEffect(() => {
     async function getProperties() {
@@ -33,7 +33,14 @@ function MyListingPage() {
             </Button>
           </div>
         ) : (
-          ""
+          <div className="">
+            <h1 className="text-3xl font-semibold text-[#16324f] dark:text-white">
+              Manage your rentals
+            </h1>
+            <p className="mt-2 text-sm text-[#6b7280] dark:text-slate-300">
+              This is a place where you can add, edit or delete your rentals
+            </p>
+          </div>
         )}
       </section>
       <PropertyBoxes boxType="Your listings" boxData={properties} />

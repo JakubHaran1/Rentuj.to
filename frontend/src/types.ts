@@ -57,6 +57,8 @@ type ConfirmPasswordType = {
   password: string;
 };
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+
+// Property types
 type PropertyType = {
   title: string;
   city: string;
@@ -78,6 +80,17 @@ type PropertyDetailType = {
   longitude: number;
   apartment_photos: string[] | FileList;
 };
+
+type PropertyListingType = {
+  pk: number;
+  title: string;
+  city: string;
+  street: string;
+  home_number: number;
+  flat_number: number;
+  floor_number: number;
+  property_details: PropertyDetailType;
+};
 type CreatePropertyDataType = Omit<PropertyDetailType, "owner">;
 export type {
   accessTokenType,
@@ -93,4 +106,5 @@ export type {
   PropertyType,
   PropertyDetailType,
   CreatePropertyDataType,
+  PropertyListingType,
 };
