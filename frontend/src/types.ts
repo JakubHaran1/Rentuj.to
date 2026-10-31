@@ -92,6 +92,11 @@ type PropertyListingType = {
   property_details: PropertyDetailType;
 };
 type CreatePropertyDataType = Omit<PropertyDetailType, "owner">;
+
+type CreateFormStateType = Omit<
+  PropertyDetailType,
+  "latitude" | "longitude" | "owner"
+> & { address: string };
 export type {
   accessTokenType,
   LoginCredentialsType,
@@ -107,4 +112,5 @@ export type {
   PropertyDetailType,
   CreatePropertyDataType,
   PropertyListingType,
+  CreateFormStateType,
 };

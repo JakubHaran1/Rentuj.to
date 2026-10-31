@@ -1,16 +1,12 @@
 // import { useForm } from "react-hook-form";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
-import type { PropertyDetailType } from "../types";
+import type { CreateFormStateType } from "../types";
 import { PropertiesService } from "../services/propertiesService";
 import { GeoService } from "../services/geoService";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
-
-type CreateFormStateType = Omit<
-  PropertyDetailType,
-  "latitude" | "longitude" | "owner"
-> & { address: string };
+import Suggestions from "../components/create_listings/Suggestions";
 
 type GeoApiResponseType = {
   properties: {
@@ -71,7 +67,7 @@ function CreateListing() {
   };
 
   const onSubmitCreate = async (data: CreateFormStateType) => {
-    console.log("c");
+    setFieldSuggestion([]);
 
     const { city, street, home_number } = data.property;
     console.log("c", data.property.title);
@@ -151,28 +147,12 @@ function CreateListing() {
                 {fieldState !== "city" || fieldSuggestion.length == 0 ? (
                   ""
                 ) : (
-                  <ul className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-[#c2c9d2] bg-white py-1 text-sm text-[#1f2937] shadow-xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:ring-white/10">
-                    {fieldSuggestion.map((suggestion) => (
-                      <li
-                        key={suggestion}
-                        className="border-b border-slate-100 last:border-b-0 dark:border-slate-800"
-                      >
-                        <button
-                          type="button"
-                          className="block w-full px-4 py-3 text-left transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2f80ed] dark:hover:bg-slate-800 dark:focus:bg-slate-800"
-                          onClick={() => {
-                            formCreate.setValue("property.city", suggestion, {
-                              shouldValidate: true,
-                              shouldDirty: true,
-                            });
-                            setFieldState("");
-                          }}
-                        >
-                          {suggestion}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <Suggestions
+                    fieldName="property.city"
+                    fieldSuggestions={fieldSuggestion}
+                    form={formCreate}
+                    clean_list={setFieldState}
+                  />
                 )}
               </div>
 
@@ -190,29 +170,12 @@ function CreateListing() {
                 {fieldState !== "street" || fieldSuggestion.length == 0 ? (
                   ""
                 ) : (
-                  <ul className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-[#c2c9d2] bg-white py-1 text-sm text-[#1f2937] shadow-xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:ring-white/10">
-                    {fieldSuggestion.map((suggestion) => (
-                      <li
-                        key={suggestion}
-                        className="border-b border-slate-100 last:border-b-0 dark:border-slate-800"
-                      >
-                        <button
-                          type="button"
-                          className="block w-full px-4 py-3 text-left transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2f80ed] dark:hover:bg-slate-800 dark:focus:bg-slate-800"
-                          onClick={() => {
-                            formCreate.setValue("property.street", suggestion, {
-                              shouldValidate: true,
-                              shouldDirty: true,
-                            });
-                            setFieldState("");
-                            setFieldSuggestion([]);
-                          }}
-                        >
-                          {suggestion}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <Suggestions
+                    fieldName="property.street"
+                    fieldSuggestions={fieldSuggestion}
+                    form={formCreate}
+                    clean_list={setFieldState}
+                  />
                 )}
               </div>
               <Input
