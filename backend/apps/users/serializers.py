@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from common import save_img
 from datetime import date
+from django.utils import timezone
 
 
 class PasswordResetRequestSerializer(Serializer):
@@ -164,5 +165,7 @@ class UserCreateSerializer(ModelSerializer):
 class UserCustomTokenSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
+        self.user.last_login = timezone.now()
+        self.user.save(update_fields=["last_login"])
         data["user"] = UserSerializer(self.user).data
         return data
