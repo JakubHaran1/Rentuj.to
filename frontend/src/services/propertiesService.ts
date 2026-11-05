@@ -25,19 +25,24 @@ export const PropertiesService = {
     );
     return resp.data;
   },
+
   async createPropertyItem(data: CreatePropertyDataType) {
     const { property, apartment_photos, ...propertyDetails } = data;
+
     const resp = await privateApi.post<{
       property_details: { pk: number };
     }>("rentals/properties", {
       ...property,
       property_details: propertyDetails,
     });
-    console.log("img");
-    if (!(apartment_photos instanceof FileList)) return;
+
+    const files =
+      apartment_photos instanceof FileList
+        ? Array.from(apartment_photos)
+        : apartment_photos;
 
     await Promise.all(
-      Array.from(apartment_photos).map((file) => {
+      files.map((file) => {
         const formData = new FormData();
         formData.append(
           "property_details",

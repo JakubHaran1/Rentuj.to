@@ -91,7 +91,14 @@ type PropertyListingType = {
   floor_number: number;
   property_details: PropertyDetailType;
 };
-type CreatePropertyDataType = Omit<PropertyDetailType, "owner">;
+type CreatePropertyDataType = Omit<
+  PropertyDetailType,
+  "owner" | "latitude" | "longitude" | "apartment_photos"
+> & {
+  latitude: number | null;
+  longitude: number | null;
+  apartment_photos: File[];
+};
 
 type CreateFormStateType = Omit<
   PropertyDetailType,

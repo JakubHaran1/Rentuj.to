@@ -17,7 +17,7 @@ export const GeoService = {
     );
     return resp.data.features;
   },
-  async geocoding(city: string, street: string, number: number) {
+  async geocoding<T>(city: string, street: string, number: number): Promise<T> {
     const resp = await axios.get(`https://api.geoapify.com/v1/geocode/search`, {
       params: {
         text: `${city}, ${street}, ${number}`,

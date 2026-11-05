@@ -1,29 +1,49 @@
-// import { useForm } from "react-hook-form";
-import Button from "../components/common/Button";
-import Input from "../components/common/Input";
-import type { CreateFormStateType } from "../types";
-import { PropertiesService } from "../services/propertiesService";
-import { GeoService } from "../services/geoService";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
-import Suggestions from "../components/create_listings/Suggestions";
 
+import Button from "../components/common/Button";
+import Input from "../components/common/Input";
+import ImgGallery from "../components/imgGallery/ImgGallery";
+import Suggestions from "../components/create_listings/Suggestions";
+import type { GalleryImage } from "../components/imgGallery/imgTypes";
+import type { CreateFormStateType } from "../types";
+
+import { PropertiesService } from "../services/propertiesService";
+import { GeoService } from "../services/geoService";
+type coordsType = {
+  address_line1: string;
+  formatted: string;
+  lat: string;
+  lon: string;
+};
 type GeoApiResponseType = {
   properties: {
     address_line1: string;
+    formatted: string;
+    lat: number;
+    lon: number;
   };
+};
+
+const emptyCoords: coordsType = {
+  address_line1: "",
+  formatted: "",
+  lat: "",
+  lon: "",
 };
 
 function CreateListing() {
   const [fieldState, setFieldState] = useState("");
   const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
+
   const cityRef = useRef<HTMLDivElement>(null);
   const streetRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState<{
-    formatted: string;
-    lat: string;
-    lon: string;
-  }>({ formatted: "", lat: "", lon: "" });
+
+  const [coords, setCoords] = useState<coordsType>(emptyCoords);
+
+  const [imgs, setImgs] = useState<GalleryImage[]>([]);
+  const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);
+
   const formCreate = useForm<CreateFormStateType>({
     defaultValues: {
       address: "",
@@ -42,6 +62,14 @@ function CreateListing() {
       },
     },
   });
+  const resetCreateForm = () => {
+    formCreate.reset();
+    setCoords(emptyCoords);
+    setFieldState("");
+    setFieldSuggestion([]);
+    setImgs([]);
+    setCroppedImgs([]);
+  };
   const cityField = formCreate.register("property.city", {
     required: "City field is required",
   });
@@ -69,24 +97,72 @@ function CreateListing() {
   const onSubmitCreate = async (data: CreateFormStateType) => {
     setFieldSuggestion([]);
 
+    const apartmentPhotos = imgs
+      .map(
+        (image) =>
+          croppedImgs.find((croppedImage) => croppedImage.id === image.id) ??
+          image,
+      )
+          .map((image) => image.file)
+          .filter((file) => file.size > 0);
+
     const { city, street, home_number } = data.property;
     console.log("c", data.property.title);
 
-    const coordinates_data = await GeoService.geocoding(
+    const coordinates_data = await GeoService.geocoding<GeoApiResponseType[]>(
       city,
       street,
       home_number,
     );
-    // if (coordinates_data.length > 1) {
-    //   console.log("we can not localize your apartment, (add a choose logic )");
-    //   return;
 
-    const coordinate = coordinates_data[0];
-    const { formatted, lat, lon } = coordinate;
-    setCoords({ formatted, lat, lon });
-    const dataToSend = { latitude: lat, longitude: lon, ...data };
-    const resp = await PropertiesService.createPropertyItem(dataToSend);
-    console.log(resp);
+    const locations = coordinates_data.map(
+      ({ properties: { address_line1, formatted, lat, lon } }): coordsType => ({
+        address_line1,
+        formatted,
+        lat: String(lat),
+        lon: String(lon),
+      }),
+    );
+
+    if (locations.length !== 1) {
+      setCoords(emptyCoords);
+      const dataToSend = {
+        ...data,
+        latitude: null,
+        longitude: null,
+        apartment_photos: apartmentPhotos,
+      };
+
+      await PropertiesService.createPropertyItem(dataToSend);
+      resetCreateForm();
+      return;
+    }
+
+    const coordinate = locations[0];
+    if (!coordinate) {
+      setCoords(emptyCoords);
+      const dataToSend = {
+        ...data,
+        latitude: null,
+        longitude: null,
+        apartment_photos: apartmentPhotos,
+      };
+      await PropertiesService.createPropertyItem(dataToSend);
+      resetCreateForm();
+      return;
+    }
+
+    const { address_line1, formatted, lat, lon } = coordinate;
+    setCoords({ address_line1, formatted, lat, lon });
+    const dataToSend = {
+      ...data,
+      latitude: Number(lat),
+      longitude: Number(lon),
+      apartment_photos: apartmentPhotos,
+    };
+
+    await PropertiesService.createPropertyItem(dataToSend);
+    resetCreateForm();
   };
 
   useEffect(() => {
@@ -102,6 +178,7 @@ function CreateListing() {
     };
     document.addEventListener("click", closeSuggestionList);
   }, []);
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <section className="rounded-2xl border border-[#c2c9d2] bg-[#e9edf2] p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
@@ -128,6 +205,7 @@ function CreateListing() {
                 label="Title"
                 maxLength={150}
                 labelClassName="mt-5 md:col-span-2"
+                error={formCreate.formState.errors.property?.title?.message}
                 {...formCreate.register("property.title", {
                   required: "Title field is required",
                 })}
@@ -137,22 +215,33 @@ function CreateListing() {
                 <Input
                   label="City"
                   maxLength={80}
+                  error={formCreate.formState.errors.property?.city?.message}
                   {...cityField}
                   onChange={(e) => {
                     cityField.onChange(e);
-                    void onAddressChange(e, "city");
+                    setCoords(emptyCoords);
+                    onAddressChange(e, "city");
                   }}
                 />
 
                 {fieldState !== "city" || fieldSuggestion.length == 0 ? (
                   ""
                 ) : (
-                  <Suggestions
-                    fieldName="property.city"
-                    fieldSuggestions={fieldSuggestion}
-                    form={formCreate}
-                    clean_list={setFieldState}
-                  />
+                  <div className="absolute w-full z-20">
+                    <Suggestions
+                      suggestions={fieldSuggestion}
+                      getKey={(suggestion) => suggestion}
+                      renderSuggestion={(suggestion) => suggestion}
+                      onSuggestionClick={(suggestion) => {
+                        formCreate.setValue("property.city", suggestion, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        setFieldState("");
+                        setFieldSuggestion([]);
+                      }}
+                    />
+                  </div>
                 )}
               </div>
 
@@ -160,28 +249,42 @@ function CreateListing() {
                 <Input
                   label="Street"
                   maxLength={80}
+                  error={formCreate.formState.errors.property?.street?.message}
                   {...streetField}
                   onChange={(e) => {
                     streetField.onChange(e);
-                    void onAddressChange(e, "street");
+                    setCoords(emptyCoords);
+                    onAddressChange(e, "street");
                   }}
                 />
 
                 {fieldState !== "street" || fieldSuggestion.length == 0 ? (
                   ""
                 ) : (
-                  <Suggestions
-                    fieldName="property.street"
-                    fieldSuggestions={fieldSuggestion}
-                    form={formCreate}
-                    clean_list={setFieldState}
-                  />
+                  <div className="absolute w-full z-20">
+                    <Suggestions
+                      suggestions={fieldSuggestion}
+                      getKey={(suggestion) => suggestion}
+                      renderSuggestion={(suggestion) => suggestion}
+                      onSuggestionClick={(suggestion) => {
+                        formCreate.setValue("property.street", suggestion, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        setFieldState("");
+                        setFieldSuggestion([]);
+                      }}
+                    />
+                  </div>
                 )}
               </div>
               <Input
                 label="Home number"
                 type="number"
                 min={0}
+                error={
+                  formCreate.formState.errors.property?.home_number?.message
+                }
                 {...formCreate.register("property.home_number", {
                   required: "Home number field is required",
                   valueAsNumber: true,
@@ -191,6 +294,9 @@ function CreateListing() {
                 label="Flat number"
                 type="number"
                 min={0}
+                error={
+                  formCreate.formState.errors.property?.flat_number?.message
+                }
                 {...formCreate.register("property.flat_number", {
                   required: "Flat number field is required",
                   valueAsNumber: true,
@@ -200,6 +306,9 @@ function CreateListing() {
                 label="Floor number"
                 type="number"
                 min={0}
+                error={
+                  formCreate.formState.errors.property?.floor_number?.message
+                }
                 {...formCreate.register("property.floor_number", {
                   required: "Floor number field is required",
                   valueAsNumber: true,
@@ -216,6 +325,9 @@ function CreateListing() {
                 label="Number of levels"
                 type="number"
                 min={0}
+                error={
+                  formCreate.formState.errors.number_of_levels?.message
+                }
                 {...formCreate.register("number_of_levels", {
                   required: "Number of levels field is required",
                 })}
@@ -224,6 +336,7 @@ function CreateListing() {
                 label="Number of rooms"
                 type="number"
                 min={1}
+                error={formCreate.formState.errors.number_of_rooms?.message}
                 {...formCreate.register("number_of_rooms", {
                   required: "Number of rooms field is required",
                 })}
@@ -232,6 +345,7 @@ function CreateListing() {
                 label="Price"
                 type="number"
                 min={0}
+                error={formCreate.formState.errors.price?.message}
                 {...formCreate.register("price", {
                   required: "Price field is required",
                 })}
@@ -241,6 +355,7 @@ function CreateListing() {
                 type="number"
                 min={0}
                 step="0.01"
+                error={formCreate.formState.errors.square_meters?.message}
                 {...formCreate.register("square_meters", {
                   required: "Square meters field is required",
                 })}
@@ -250,27 +365,37 @@ function CreateListing() {
                 <textarea
                   maxLength={250}
                   rows={5}
+                  aria-describedby={
+                    formCreate.formState.errors.description
+                      ? "description-error"
+                      : undefined
+                  }
+                  aria-invalid={
+                    formCreate.formState.errors.description ? true : undefined
+                  }
                   className="mt-1.5 w-full resize-y rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9ca3af] focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   {...formCreate.register("description", {
                     required: "Description field is required",
                   })}
                 />
+                {formCreate.formState.errors.description?.message && (
+                  <span
+                    className="mt-1 block text-sm font-normal text-red-600 dark:text-red-400"
+                    id="description-error"
+                    role="alert"
+                  >
+                    {formCreate.formState.errors.description.message}
+                  </span>
+                )}
               </label>
             </div>
           </fieldset>
-
-          <fieldset>
-            <legend className="text-xl font-semibold text-[#16324f] dark:text-white">
-              Apartment photos
-            </legend>
-            <Input
-              label="Images"
-              type="file"
-              accept="image/*"
-              multiple
-              {...formCreate.register("apartment_photos")}
-            />
-          </fieldset>
+          <ImgGallery
+            imgs={imgs}
+            setImgs={setImgs}
+            croppedImgs={croppedImgs}
+            setCroppedImgs={setCroppedImgs}
+          />
 
           <Button type="submit">Create listing</Button>
         </form>
