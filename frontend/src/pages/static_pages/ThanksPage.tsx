@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import { AuthService } from "../../services/authService";
 import { useState } from "react";
+import ErrorMessage from "../../components/common/ErrorMessage";
 
 function ThanksPage() {
   const [detail, setDetail] = useState("");
@@ -53,9 +54,7 @@ function ThanksPage() {
         Verify your email address
       </h1>
       {error ? (
-        <p className="mt-4 text-sm text-red-600" role="alert">
-          {error}
-        </p>
+        <ErrorMessage txt={error} />
       ) : detail ? (
         <p
           className="mt-4 leading-7 text-[#6b7280] dark:text-slate-300"

@@ -4,12 +4,12 @@ from django.core.exceptions import PermissionDenied
 
 
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Property, PropertyDetail, PropertyImg
-from .serializers import PropertySerializer, PropertyDetailsSerializer, PropertyImgSerializer
+from .models import Property, PropertyDetail, PropertyImg, RentalFilter
+from .serializers import PropertySerializer, PropertyDetailsSerializer, PropertyImgSerializer, RentalFilterSerializer
 
 
 class PropertyViewSet(ModelViewSet):
@@ -79,3 +79,14 @@ class PropertyImgViewSet(ModelViewSet):
             raise PermissionDenied(
                 {"detail: You can edit only your own properties"})
         return super().update(request, *args, **kwargs)
+
+
+class FiltersViewSet(ModelViewSet):
+    queryset: QuerySet[RentalFilter] = RentalFilter.objects.order_by("name")
+    serializer_class = RentalFilterSerializer
+
+    def get_permissions(self):
+        if self.action not in ["list", "retrieve"]:
+            return [IsAdminUser()]
+
+        return [AllowAny()]

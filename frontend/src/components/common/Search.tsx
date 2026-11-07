@@ -1,30 +1,5 @@
 import Button from "./Button";
 
-const mainFilters = [
-  "Location",
-  "Price",
-  "Bedrooms",
-  "Floor area",
-  "Pets allowed",
-];
-
-const extraFilters = [
-  "Property type",
-  "Available from",
-  "Furnished",
-  "Parking",
-  "Balcony or garden",
-  "Elevator",
-  "Internet",
-  "Utilities included",
-  "Lease length",
-  "Security deposit",
-  "No agency fee",
-  "Children welcome",
-  "Remote-work friendly",
-  "Verified landlord",
-  "Private landlord",
-];
 function Search() {
   return (
     <>
@@ -68,61 +43,7 @@ function Search() {
         </form>
       </section>
 
-      <section className="mt-10" aria-labelledby="filters-heading">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h2
-              id="filters-heading"
-              className="text-xl font-semibold text-[#16324f] dark:text-white"
-            >
-              Find the right fit
-            </h2>
-            <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
-              Start with the essentials, then narrow down your search.
-            </p>
-          </div>
-          <span className="text-sm text-[#6b7280] dark:text-slate-400">
-            20 filters
-          </span>
-        </div>
-        <div className="mt-4 rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-wrap gap-2">
-            {mainFilters.map((filter) => (
-              <button className="filter-chip" key={filter} type="button">
-                {filter}
-                <span aria-hidden="true" className="text-[#6b7280]">
-                  ⌄
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="filter-panel">
-            <input
-              className="filter-checkbox"
-              id="all-filters"
-              type="checkbox"
-              aria-label="Show all filters"
-            />
-            <div className="filter-overflow mt-2">
-              <div className="flex flex-wrap gap-2 pb-2">
-                {extraFilters.map((filter) => (
-                  <button className="filter-chip" key={filter} type="button">
-                    {filter}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <label
-              className="filter-toggle mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#2f80ed] hover:text-blue-700"
-              htmlFor="all-filters"
-            >
-              <span className="filter-toggle__closed">Show all filters</span>
-              <span className="filter-toggle__open">Show fewer filters</span>
-              <span aria-hidden="true">⌄</span>
-            </label>
-          </div>
-        </div>
-      </section>
+      {/* <RentalFilters /> */}
     </>
   );
 }

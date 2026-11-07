@@ -1,7 +1,7 @@
 import { useId, type InputHTMLAttributes } from "react";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
+  label?: string;
   error?: string;
   labelClassName?: string;
 };
@@ -10,7 +10,7 @@ const baseInputClassName =
   "mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white";
 
 function Input({
-  label,
+  label = "",
   error,
   labelClassName = "mt-4",
   className = "",

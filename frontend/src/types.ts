@@ -64,7 +64,6 @@ type PropertyType = {
   city: string;
   street: string;
   home_number: number;
-  flat_number: number;
   floor_number: number;
 };
 
@@ -78,8 +77,20 @@ type PropertyDetailType = {
   price: number;
   latitude: number;
   longitude: number;
+  building_type: BuildingType;
+  date_active: string | null;
+  filters: RentalFilterAssignmentType[];
   apartment_photos: string[] | FileList;
 };
+
+type BuildingType =
+  | "DETACHED"
+  | "SEMI_DETACHED"
+  | "TERRACED"
+  | "APARTMENT_BUILDING"
+  | "BLOCK_OF_FLATS"
+  | "TENEMENT"
+  | "ROOM_IN_SHARED_APARTMENT";
 
 type PropertyListingType = {
   pk: number;
@@ -87,7 +98,6 @@ type PropertyListingType = {
   city: string;
   street: string;
   home_number: number;
-  flat_number: number;
   floor_number: number;
   property_details: PropertyDetailType;
 };
@@ -95,6 +105,7 @@ type CreatePropertyDataType = Omit<
   PropertyDetailType,
   "owner" | "latitude" | "longitude" | "apartment_photos"
 > & {
+  date_active: string | null;
   latitude: number | null;
   longitude: number | null;
   apartment_photos: File[];
@@ -104,6 +115,33 @@ type CreateFormStateType = Omit<
   PropertyDetailType,
   "latitude" | "longitude" | "owner"
 > & { address: string };
+
+type GeoApiResponseType = {
+  properties: {
+    address_line1: string;
+    formatted: string;
+    lat: number;
+    lon: number;
+  };
+};
+
+type RentalFiltersType = {
+  pk: number;
+  name: string;
+};
+
+type RentalFilterAssignmentType = {
+  id: number;
+  value: -1 | 0 | 1;
+};
+
+type MainFiltersStateType = {
+  price: number;
+  buildingType: BuildingType;
+  numberOfLevels: number;
+  numberOfRooms: number;
+  squareMeters: number;
+};
 export type {
   accessTokenType,
   LoginCredentialsType,
@@ -117,7 +155,12 @@ export type {
   AuthStatus,
   PropertyType,
   PropertyDetailType,
+  BuildingType,
   CreatePropertyDataType,
   PropertyListingType,
   CreateFormStateType,
+  GeoApiResponseType,
+  RentalFiltersType,
+  RentalFilterAssignmentType,
+  MainFiltersStateType,
 };

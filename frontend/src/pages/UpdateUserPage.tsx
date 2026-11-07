@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import Button from "../components/common/Button";
 import Input from "../components/common/Input";
+import ErrorMessage from "../components/common/ErrorMessage";
 import { useUserContext } from "../components/context/UserContext";
 import type { EditUserType } from "../types";
 import { AuthService } from "../services/authService";
@@ -158,9 +159,7 @@ function UpdateUserPage() {
 
       <form className="mt-6" onSubmit={updateForm.handleSubmit(onSumbitEdit)}>
         {updateForm.formState.errors.root?.server && (
-          <p className="mb-4 text-sm text-red-600" role="alert">
-            {updateForm.formState.errors.root.server.message}
-          </p>
+          <ErrorMessage txt={updateForm.formState.errors.root.server.message} />
         )}
         {formState && (
           <p className="mb-4 text-sm text-green-700" role="status">

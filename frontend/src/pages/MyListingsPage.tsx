@@ -1,7 +1,7 @@
 import type { PropertyListingType } from "../types";
 import PropertyBoxes from "../components/common/PropertyBoxes";
 import { useEffect, useState } from "react";
-import { PropertiesService } from "../services/propertiesService";
+import { RentalService } from "../services/RentalService";
 import { useUserContext } from "../components/context/UserContext";
 import Button from "../components/common/Button";
 
@@ -10,7 +10,7 @@ function MyListingPage() {
   const { user } = useUserContext();
   useEffect(() => {
     async function getProperties() {
-      const propList = await PropertiesService.getPropertiesList(user?.id);
+      const propList = await RentalService.getPropertiesList(user?.id);
       console.log(propList);
       setProperties(propList);
     }

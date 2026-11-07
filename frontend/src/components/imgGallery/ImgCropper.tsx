@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 import type { GalleryImage } from "./imgTypes";
+import ErrorMessage from "../common/ErrorMessage";
 
 type ImgCropperProps = {
   images: GalleryImage[];
@@ -232,11 +233,7 @@ export default function ImgCropper({
               </button>
             </div>
 
-            {error ? (
-              <p className="mt-3 text-sm text-red-600" role="alert">
-                {error}
-              </p>
-            ) : null}
+            {error ? <ErrorMessage txt={error} /> : null}
           </div>
 
           <aside>

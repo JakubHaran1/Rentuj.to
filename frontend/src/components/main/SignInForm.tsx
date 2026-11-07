@@ -7,6 +7,7 @@ import { useUserContext } from "../context/UserContext";
 import IconButton from "../common/IconButton";
 import { useState } from "react";
 import Input from "../common/Input";
+import ErrorMessage from "../common/ErrorMessage";
 
 type SignInFormProps = {
   isOpen: boolean;
@@ -102,9 +103,7 @@ function SignInForm({
             }}
           />
           {loginForm.formState.errors.root?.server && (
-            <p className="mt-4 text-sm text-red-600" role="alert">
-              {loginForm.formState.errors.root.server.message}
-            </p>
+            <ErrorMessage txt={loginForm.formState.errors.root.server.message} />
           )}
 
           <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
@@ -174,9 +173,9 @@ function SignInForm({
             }}
           />
           {remindForm.formState.errors.root?.server && (
-            <p className="mt-4 text-sm text-red-600" role="alert">
-              {remindForm.formState.errors.root.server.message}
-            </p>
+            <ErrorMessage
+              txt={remindForm.formState.errors.root.server.message}
+            />
           )}
 
           <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">
@@ -193,9 +192,9 @@ function SignInForm({
             </p>
           )}
           {remindForm.formState.errors.root?.server && (
-            <p className="mt-4 text-sm text-red-600" role="alert">
-              {remindForm.formState.errors.root.server.message}
-            </p>
+            <ErrorMessage
+              txt={remindForm.formState.errors.root.server.message}
+            />
           )}
           <Input
             autoComplete="email"

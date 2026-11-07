@@ -4,9 +4,10 @@ import type {
   CreatePropertyDataType,
   PropertyDetailType,
   PropertyListingType,
+  RentalFiltersType,
 } from "../types";
 
-export const PropertiesService = {
+export const RentalService = {
   async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
     const resp = await publicApi.get<PropertyListingType[]>(
       "rentals/properties",
@@ -54,5 +55,9 @@ export const PropertiesService = {
       }),
     );
     return resp;
+  },
+  async getRentalFilters(): Promise<RentalFiltersType[]> {
+    const resp = await publicApi.get<RentalFiltersType[]>("rentals/filters");
+    return resp.data;
   },
 };

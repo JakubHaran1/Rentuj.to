@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import Button from "../common/Button";
 import Input from "../common/Input";
 import IconButton from "../common/IconButton";
+import ErrorMessage from "../common/ErrorMessage";
 
 import type { RegisterUserType } from "../../types";
 import { AuthService } from "../../services/authService";
@@ -106,9 +107,7 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
         {!registerStatus ? (
           <>
             {errors.root?.server && (
-              <p className="mt-4 text-sm text-red-600" role="alert">
-                {errors.root.server.message}
-              </p>
+              <ErrorMessage txt={errors.root.server.message} />
             )}
 
             <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">

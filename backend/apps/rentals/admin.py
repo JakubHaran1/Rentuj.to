@@ -1,12 +1,12 @@
 from django.contrib import admin
 
 from django.contrib import admin
-from .models import Property, PropertyDetail,  PropertyImg
+from .models import Property, PropertyDetail, PropertyFilter, PropertyImg, RentalFilter
 
 
 class PropertySite(admin.ModelAdmin):
     list_display = ["title",
-                    "street", "home_number", "flat_number", "floor_number"]
+                    "street", "home_number",  "floor_number"]
 
     class Meta:
         verbose_name = "Property"
@@ -29,7 +29,16 @@ class PropertyImgSite(admin.ModelAdmin):
         verbose_name_plural = "PropertyImgs"
 
 
+class FilterSite(admin.ModelAdmin):
+    list_display = ["pk", "name"]
+
+    class Meta:
+        verbose_name = "RentalFilters"
+        verbose_name_plural = "RentalFilters"
+
+
 admin.site.register(Property, PropertySite)
 admin.site.register(PropertyDetail, PropertyDetailSite)
-
 admin.site.register(PropertyImg, PropertyImgSite)
+admin.site.register(RentalFilter, FilterSite)
+admin.site.register(PropertyFilter)

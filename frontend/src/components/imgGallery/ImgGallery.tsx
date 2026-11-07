@@ -11,7 +11,9 @@ import DragItem from "./DragItem";
 import { isSortable } from "@dnd-kit/react/sortable";
 import ImgCropper from "./ImgCropper";
 import DragDropInput from "./DragDropInput";
+import ErrorMessage from "../common/ErrorMessage";
 
+const MAX_PROPERTY_IMAGES = 10;
 type ImgGalleryProps = {
   imgs: GalleryImage[];
   setImgs: Dispatch<SetStateAction<GalleryImage[]>>;
@@ -26,7 +28,7 @@ function ImgGallery({
   setCroppedImgs,
 }: ImgGalleryProps) {
   const [isCropperOpen, setIsCropperOpen] = useState(false);
-
+  const [errorGallery, setErrorGallery] = useState("");
   const onAddImg = useCallback(
     (files: File[]) => {
       const acceptedImg = files.map((file) => ({
@@ -34,10 +36,13 @@ function ImgGallery({
         file,
         previewUrl: URL.createObjectURL(file),
       }));
-
+      if (imgs.length > MAX_PROPERTY_IMAGES) {
+        setErrorGallery(`You can't select ${MAX_PROPERTY_IMAGES} photos`);
+        return;
+      }
       setImgs((prev) => [...prev, ...acceptedImg]);
     },
-    [setImgs],
+    [imgs, setImgs],
   );
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -95,8 +100,9 @@ function ImgGallery({
 
       <div className="mt-8 flex items-center justify-between gap-4">
         <h3 className="text-lg font-semibold text-[#16324f] dark:text-white">
-          Zdjęcia ({imgs.length}/10)
+          Photos ({imgs.length}/10)
         </h3>
+        {errorGallery && <ErrorMessage txt={errorGallery} />}
       </div>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <DragDropProvider onDragEnd={onDragEnd}>
