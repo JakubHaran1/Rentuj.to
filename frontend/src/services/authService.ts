@@ -7,7 +7,7 @@ import type {
   UserType,
   ConfirmPasswordType,
   EditUserType,
-} from "../types";
+} from "../types/userTypes";
 
 export const AuthService = {
   async login(

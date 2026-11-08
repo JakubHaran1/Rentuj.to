@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import type { GalleryImage } from "../components/imgGallery/imgTypes";
-import type { CreateFormStateType, GeoApiResponseType } from "../types";
+import type { GalleryImage } from "../types/imgTypes";
+import type {
+  CreateFormStateType,
+  GeoApiResponseType,
+} from "../types/propertyTypes";
 
 import { RentalService } from "../services/RentalService";
 import { GeoService } from "../services/geoService";

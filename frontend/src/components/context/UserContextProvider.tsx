@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { UserContext } from "./UserContext";
 import type { ReactNode } from "react";
-import type { AuthStatus, UserType } from "../../types";
+import type { AuthStatus, UserType } from "../../types/userTypes";
 import { AuthService } from "../../services/authService";
 
 export function UserContextProvider({ children }: { children: ReactNode }) {

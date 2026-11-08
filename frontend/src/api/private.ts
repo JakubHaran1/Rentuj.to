@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
-import type { accessTokenType } from "../types";
+import type { accessTokenType } from "../types/userTypes";
 import { API_BASE_URL, publicApi } from "./public";
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & {

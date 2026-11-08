@@ -4,14 +4,14 @@ import type {
   CreateFormStateType,
   MainFiltersStateType,
   GeoApiResponseType,
-} from "../../types";
+} from "../../types/propertyTypes";
 import Input from "../common/Input";
 import Suggestions from "./Suggestions";
 import BuildingType from "./BuildingType";
 import ImgGallery from "../imgGallery/ImgGallery";
 import Button from "../common/Button";
 import { GeoService } from "../../services/geoService";
-import type { GalleryImage } from "../imgGallery/imgTypes";
+import type { GalleryImage } from "../../types/imgTypes";
 import RentalFilters from "./RentalFilters";
 
 type CreateListingFormProps = {

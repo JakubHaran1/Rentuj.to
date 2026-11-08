@@ -3,7 +3,7 @@ import type {
   MainFiltersStateType,
   RentalFilterAssignmentType,
   RentalFiltersType,
-} from "../../types";
+} from "../../types/propertyTypes";
 import Input from "../common/Input";
 import BuildingType from "./BuildingType";
 import { RentalService } from "../../services/RentalService";
@@ -195,7 +195,11 @@ function RentalFilters({
             aria-expanded={showRentalFilters}
             onClick={() => setShowRentalFilters((isVisible) => !isVisible)}
           >
-            {showRentalFilters ? "⌃" : "⌄"}
+            {showRentalFilters ? (
+              <i className="fa-solid fa-angle-up"></i>
+            ) : (
+              <i className="fa-solid fa-angle-down"></i>
+            )}
           </button>
         )}
         <div

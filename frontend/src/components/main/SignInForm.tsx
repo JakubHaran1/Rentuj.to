@@ -2,7 +2,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { AuthService } from "../../services/authService";
 import Button from "../common/Button";
-import type { LoginCredentialsType } from "../../types";
+import type { LoginCredentialsType } from "../../types/userTypes";
 import { useUserContext } from "../context/UserContext";
 import IconButton from "../common/IconButton";
 import { useState } from "react";
@@ -103,7 +103,9 @@ function SignInForm({
             }}
           />
           {loginForm.formState.errors.root?.server && (
-            <ErrorMessage txt={loginForm.formState.errors.root.server.message} />
+            <ErrorMessage
+              txt={loginForm.formState.errors.root.server.message}
+            />
           )}
 
           <h2 className="text-lg font-semibold text-[#16324f] dark:text-white">

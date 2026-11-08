@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
-import type { GalleryImage } from "./imgTypes";
+import type { GalleryImage } from "../../types/imgTypes";
 import ErrorMessage from "../common/ErrorMessage";
 
 type ImgCropperProps = {
@@ -90,14 +90,6 @@ export default function ImgCropper({
   }, []);
 
   useEffect(() => {
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCropArea(null);
-    setPreviewUrl(null);
-    setError(null);
-  }, [selectedImageId]);
-
-  useEffect(() => {
     return () => {
       if (previewUrl && previewUrl !== savedPreviewUrl.current) {
         URL.revokeObjectURL(previewUrl);
@@ -178,6 +170,7 @@ export default function ImgCropper({
           <div>
             <div className="relative h-[min(60vh,480px)] overflow-hidden rounded-xl bg-slate-950">
               <Cropper
+                key={selectedImage.id}
                 image={selectedImage.previewUrl}
                 crop={crop}
                 zoom={zoom}

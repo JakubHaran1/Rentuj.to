@@ -1,62 +1,4 @@
-type accessTokenType = {
-  access: string;
-  refresh: string;
-};
-
-type LoginCredentialsType = {
-  email: string;
-  password: string;
-};
-
-type UserRoleType = "OWNER" | "RENTER";
-
-type UserType = {
-  id: string;
-  name: string;
-  second_name: string;
-  email: string;
-  user_type: UserRoleType;
-  avatar: string | FileList;
-  last_login: string | null;
-  created: string;
-};
-
-type RegisterUserType = {
-  name: string;
-  second_name: string;
-  email: string;
-  password: string;
-  confirm_password: string;
-  avatar: string | FileList;
-  birth_date: string;
-  user_type?: UserRoleType;
-};
-
-type EditUserType = Pick<
-  RegisterUserType,
-  "name" | "second_name" | "email" | "password" | "confirm_password"
-> & {
-  avatar?: FileList;
-};
-
-type UserResponseType = {
-  user: UserType;
-  access?: string;
-  refresh?: string;
-};
-
-type DrfErrorBodyType = {
-  detail?: unknown;
-  non_field_errors?: unknown;
-};
-
-type ConfirmPasswordType = {
-  uidb64: string;
-  token: string;
-  confirm: string;
-  password: string;
-};
-type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+import type { UserType } from "./userTypes";
 
 // Property types
 type PropertyType = {
@@ -79,8 +21,13 @@ type PropertyDetailType = {
   longitude: number;
   building_type: BuildingType;
   date_active: string | null;
-  filters: RentalFilterAssignmentType[];
-  apartment_photos: string[] | FileList;
+  filters: RentalFilterResponseType[];
+  apartment_photos: PropertyImageType[] | FileList;
+};
+
+type PropertyImageType = {
+  pk: number;
+  img: string;
 };
 
 type BuildingType =
@@ -99,22 +46,26 @@ type PropertyListingType = {
   street: string;
   home_number: number;
   floor_number: number;
-  property_details: PropertyDetailType;
+  property_details: PropertyDetailType | null;
 };
 type CreatePropertyDataType = Omit<
   PropertyDetailType,
-  "owner" | "latitude" | "longitude" | "apartment_photos"
+  "owner" | "latitude" | "longitude" | "apartment_photos" | "filters"
 > & {
   date_active: string | null;
   latitude: number | null;
   longitude: number | null;
   apartment_photos: File[];
+  filters: RentalFilterAssignmentType[];
 };
 
 type CreateFormStateType = Omit<
   PropertyDetailType,
-  "latitude" | "longitude" | "owner"
-> & { address: string };
+  "latitude" | "longitude" | "owner" | "filters"
+> & {
+  address: string;
+  filters: RentalFilterAssignmentType[];
+};
 
 type GeoApiResponseType = {
   properties: {
@@ -135,6 +86,10 @@ type RentalFilterAssignmentType = {
   value: -1 | 0 | 1;
 };
 
+type RentalFilterResponseType = RentalFilterAssignmentType & {
+  name: string;
+};
+
 type MainFiltersStateType = {
   price: number;
   buildingType: BuildingType;
@@ -142,17 +97,8 @@ type MainFiltersStateType = {
   numberOfRooms: number;
   squareMeters: number;
 };
+
 export type {
-  accessTokenType,
-  LoginCredentialsType,
-  UserRoleType,
-  UserType,
-  EditUserType,
-  RegisterUserType,
-  UserResponseType,
-  DrfErrorBodyType,
-  ConfirmPasswordType,
-  AuthStatus,
   PropertyType,
   PropertyDetailType,
   BuildingType,
@@ -162,5 +108,7 @@ export type {
   GeoApiResponseType,
   RentalFiltersType,
   RentalFilterAssignmentType,
+  RentalFilterResponseType,
   MainFiltersStateType,
+  PropertyImageType,
 };

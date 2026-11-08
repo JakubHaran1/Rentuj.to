@@ -5,7 +5,7 @@ import type {
   PropertyDetailType,
   PropertyListingType,
   RentalFiltersType,
-} from "../types";
+} from "../types/propertyTypes";
 
 export const RentalService = {
   async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
@@ -13,7 +13,7 @@ export const RentalService = {
       "rentals/properties",
       {
         params: {
-          search: query_param,
+          property_details__owner_id: query_param,
         },
       },
     );
@@ -25,6 +25,10 @@ export const RentalService = {
       `rentals/properties/${id}`,
     );
     return resp.data;
+  },
+
+  async deleteProperty(id: number): Promise<void> {
+    await privateApi.delete(`rentals/properties/${id}`);
   },
 
   async createPropertyItem(data: CreatePropertyDataType) {

@@ -3,10 +3,10 @@ import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import ErrorMessage from "../components/common/ErrorMessage";
 import { useUserContext } from "../components/context/UserContext";
-import type { EditUserType } from "../types";
+import type { EditUserType } from "../types/userTypes";
 import { AuthService } from "../services/authService";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { handleDrfPostError } from "../services/helpers";
 
 const editableFields = [
   "name",
@@ -50,7 +50,10 @@ function UpdateUserPage() {
   }, [user, reset]);
 
   const onSumbitEdit = async (editData: EditUserType) => {
-    const userId = user?.id;
+    const userId = user?.pk;
+    console.log(userId);
+    console.log(user);
+
     if (!userId) {
       updateForm.setError("root.server", {
         type: "server",
@@ -87,61 +90,12 @@ function UpdateUserPage() {
       await AuthService.editUserData(dataToSend, userId);
       setFormState(editData.email !== user.email ? "email" : "success");
     } catch (error: unknown) {
-      // First check if error was an axios response, if not it would be a connection problem
-      if (axios.isAxiosError(error)) {
-        const data = error.response?.data;
-        // second check if error is an object, if not server would receives some response but some error occures
-
-        if (data && typeof data === "object") {
-          Object.entries(data).forEach(([key, value]) => {
-            // check if key_name of error is in editable fields - if yes it is normal model drf error with field but when not, it would be error for whole form or general message
-
-            if (editableFields.includes(key as EditableField)) {
-              // if value is an array it means there were more errors with this field
-              if (typeof value === "string") {
-                updateForm.setError(key as EditableField, {
-                  type: "server",
-                  message: value,
-                });
-              }
-
-              if (Array.isArray(value)) {
-                const error_arr: string[] = [];
-                value.forEach((el) => error_arr.push(el));
-                updateForm.setError(key as EditableField, {
-                  type: "server",
-                  message: error_arr.join(",\n "),
-                });
-              }
-            } else if (
-              (key === "detail" || key === "non_field_errors") &&
-              (typeof value === "string" || Array.isArray(value))
-            ) {
-              const error_arr = [];
-
-              if (typeof value === "string") error_arr.push(value);
-              if (Array.isArray(value)) error_arr.push(value);
-
-              updateForm.setError("root.server", {
-                type: "server",
-                message: error_arr.join(",\n "),
-              });
-            }
-          });
-        } else {
-          updateForm.setError("root.server", {
-            type: "server",
-            message: error.response
-              ? "Unable to update your profile. Please check the entered data."
-              : "Unable to connect. Please try again.",
-          });
-        }
-      } else {
-        updateForm.setError("root.server", {
-          type: "server",
-          message: "An unexpected error occurred. Please try again.",
-        });
-      }
+      handleDrfPostError<EditUserType, EditableField>(
+        error,
+        updateForm,
+        editableFields,
+        "Unable to update your profile. Please check the entered data.",
+      );
     }
   };
   return (

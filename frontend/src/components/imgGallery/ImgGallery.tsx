@@ -1,5 +1,5 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
-import type { GalleryImage } from "./imgTypes";
+import type { GalleryImage } from "../../types/imgTypes";
 import {
   useCallback,
   useState,
@@ -79,8 +79,6 @@ function ImgGallery({
 
       return [...previousCroppedImgs, updatedImage];
     });
-
-    setIsCropperOpen(false);
   }
 
   const displayedImgs = imgs.map(

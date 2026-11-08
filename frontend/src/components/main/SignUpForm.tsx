@@ -7,7 +7,7 @@ import Input from "../common/Input";
 import IconButton from "../common/IconButton";
 import ErrorMessage from "../common/ErrorMessage";
 
-import type { RegisterUserType } from "../../types";
+import type { RegisterUserType } from "../../types/userTypes";
 import { AuthService } from "../../services/authService";
 
 type SignUpFormProps = {

@@ -1,24 +1,43 @@
-import type { PropertyListingType } from "../types";
-import PropertyBoxes from "../components/common/PropertyBoxes";
+import type { PropertyListingType } from "../types/propertyTypes";
+import PropertyBoxes from "../components/rentals/PropertyBoxes";
 import { useEffect, useState } from "react";
 import { RentalService } from "../services/RentalService";
 import { useUserContext } from "../components/context/UserContext";
 import Button from "../components/common/Button";
+import { handleDrfGetError } from "../services/helpers";
+import ErrorMessage from "../components/common/ErrorMessage";
 
 function MyListingPage() {
   const [properties, setProperties] = useState<PropertyListingType[]>([]);
+  const [getError, setGetError] = useState<string>("");
+
   const { user } = useUserContext();
+
+  const deleteListing = async (listing: PropertyListingType) => {
+    try {
+      await RentalService.deleteProperty(listing.pk);
+      setProperties((current) =>
+        current.filter((property) => property.pk !== listing.pk),
+      );
+    } catch (error: unknown) {
+      handleDrfGetError(error, setGetError);
+    }
+  };
+
   useEffect(() => {
     async function getProperties() {
-      const propList = await RentalService.getPropertiesList(user?.id);
-      console.log(propList);
-      setProperties(propList);
+      try {
+        const propList = await RentalService.getPropertiesList(user?.pk);
+        setProperties(propList);
+      } catch (error: unknown) {
+        handleDrfGetError(error, setGetError);
+      }
     }
     getProperties();
-  }, [user?.id]);
+  }, [user?.pk]);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="w-full px-4 py-10 sm:px-6 lg:px-8">
       <section className="rounded-2xl border border-[#c2c9d2] bg-[#e9edf2] p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
         {properties.length == 0 ? (
           <div>
@@ -32,6 +51,13 @@ function MyListingPage() {
               Create a listing
             </Button>
           </div>
+        ) : getError ? (
+          <div className="">
+            <h1 className="text-3xl font-semibold text-[#16324f] dark:text-white">
+              Something went wrong
+            </h1>
+            <ErrorMessage txt={getError} />
+          </div>
         ) : (
           <div className="">
             <h1 className="text-3xl font-semibold text-[#16324f] dark:text-white">
@@ -43,7 +69,12 @@ function MyListingPage() {
           </div>
         )}
       </section>
-      <PropertyBoxes boxType="Your listings" boxData={properties} />
+      <PropertyBoxes
+        boxType="Your listings"
+        boxData={properties}
+        editable
+        onDelete={deleteListing}
+      />
     </main>
   );
 }

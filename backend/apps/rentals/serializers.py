@@ -83,10 +83,11 @@ class PropertyFilterSerializer(serializers.ModelSerializer):
         source="rental_filter",
         queryset=RentalFilter.objects.all(),
     )
+    name = serializers.CharField(source="rental_filter.name", read_only=True)
 
     class Meta:
         model = PropertyFilter
-        fields = ["id", "value"]
+        fields = ["id", "name", "value"]
 
 
 def set_property_filters(

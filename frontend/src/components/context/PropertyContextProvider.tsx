@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { PropertyContext } from "./PropertyContext";
-import type { PropertyDetailType } from "../../types";
+import type { PropertyDetailType } from "../../types/propertyTypes";
 
 export function PropertyProvider({ children }: { children: ReactNode }) {
   const [properties, setProperties] = useState<PropertyDetailType[]>([]);
