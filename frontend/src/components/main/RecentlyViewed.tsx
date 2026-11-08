@@ -1,5 +1,6 @@
 const recentlyViewed = [
   {
+    id: "warsaw-mokotow",
     location: "Warsaw · Mokotów",
     title: "Bright apartment near the metro",
     details: "2 rooms · 48 m² · available now",
@@ -7,6 +8,7 @@ const recentlyViewed = [
     imageClass: "listing-cover--one",
   },
   {
+    id: "krakow-podgorze",
     location: "Kraków · Podgórze",
     title: "Quiet apartment with a balcony",
     details: "2 rooms · 52 m² · available November 1",
@@ -14,6 +16,7 @@ const recentlyViewed = [
     imageClass: "listing-cover--two",
   },
   {
+    id: "wroclaw-srodmiescie-1",
     location: "Wrocław · Śródmieście",
     title: "Well-located studio",
     details: "1 room · 31 m² · available now",
@@ -21,6 +24,7 @@ const recentlyViewed = [
     imageClass: "listing-cover--three",
   },
   {
+    id: "wroclaw-srodmiescie-2",
     location: "Wrocław · Śródmieście",
     title: "Well-located studio",
     details: "1 room · 31 m² · available now",
@@ -54,7 +58,7 @@ function RecentlyViewed() {
         {recentlyViewed.map((listing) => (
           <article
             className="overflow-hidden rounded-xl border border-[#c2c9d2] bg-[#e9edf2] dark:border-slate-800 dark:bg-slate-900"
-            key={listing.title}
+            key={listing.id}
           >
             <div className={`listing-cover ${listing.imageClass}`}>
               <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-[#16324f]">

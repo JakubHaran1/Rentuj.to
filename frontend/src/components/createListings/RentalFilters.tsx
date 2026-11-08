@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import type {
+  CreateFormStateType,
   MainFiltersStateType,
-  RentalFilterAssignmentType,
   RentalFiltersType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
@@ -10,13 +11,6 @@ import { RentalService } from "../../services/RentalService";
 
 type MainFiltersPropsType = {
   filtersHeader?: string;
-  mainFilters: MainFiltersStateType;
-  onMainFilterChange: <K extends keyof MainFiltersStateType>(
-    key: K,
-    value: MainFiltersStateType[K],
-  ) => void;
-  onRentalFilterChange: (filterId: number, value: -1 | 0 | 1) => void;
-  selectedRentalFilters?: RentalFilterAssignmentType[];
   mode?: "default" | "set";
 };
 
@@ -26,15 +20,42 @@ type RentalFilterOption = RentalFiltersType & {
 
 function RentalFilters({
   filtersHeader = "Find the right fit",
-  mainFilters,
-  onMainFilterChange,
-  onRentalFilterChange,
-  selectedRentalFilters = [],
   mode = "default",
 }: MainFiltersPropsType) {
   const maxPrice = 20000;
+  const { getValues, setValue, watch } =
+    useFormContext<CreateFormStateType>();
+  const selectedRentalFilters = watch("filters");
+  const [mainFilters, setMainFilters] = useState<MainFiltersStateType>({
+    price: 250,
+    buildingType: "APARTMENT_BUILDING",
+    numberOfLevels: 0,
+    numberOfRooms: 1,
+    squareMeters: 0,
+  });
   const [showRentalFilters, setShowRentalFilters] = useState(mode === "set");
   const [rentalFilters, setRentalFilters] = useState<RentalFilterOption[]>([]);
+
+  const onMainFilterChange = <K extends keyof MainFiltersStateType>(
+    key: K,
+    value: MainFiltersStateType[K],
+  ) => {
+    setMainFilters((previous) => ({ ...previous, [key]: value }));
+  };
+
+  const onRentalFilterChange = (filterId: number, value: -1 | 0 | 1) => {
+    const currentFilters = getValues("filters");
+    const nextFilters = [
+      ...currentFilters.filter((filter) => filter.id !== filterId),
+      { id: filterId, value },
+    ];
+
+    setValue("filters", nextFilters, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
   useEffect(() => {
     async function getRentalFilters() {
       const resp = await RentalService.getRentalFilters();

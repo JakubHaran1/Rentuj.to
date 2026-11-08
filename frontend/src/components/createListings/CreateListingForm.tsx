@@ -1,9 +1,16 @@
-import type { UseFormReturn } from "react-hook-form";
-import { useState, type ChangeEvent, type RefObject } from "react";
+import { useFormContext } from "react-hook-form";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type {
   CreateFormStateType,
-  MainFiltersStateType,
   GeoApiResponseType,
+  ListingCoordinatesType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
 import Suggestions from "./Suggestions";
@@ -15,34 +22,33 @@ import type { GalleryImage } from "../../types/imgTypes";
 import RentalFilters from "./RentalFilters";
 
 type CreateListingFormProps = {
-  formCreate: UseFormReturn<CreateFormStateType>;
-  cityRef: RefObject<HTMLDivElement | null>;
-  streetRef: RefObject<HTMLDivElement | null>;
-  fieldState: string;
-  setFieldState: React.Dispatch<React.SetStateAction<string>>;
-  fieldSuggestion: string[];
-  setFieldSuggestion: React.Dispatch<React.SetStateAction<string[]>>;
+  initialData?: CreateFormStateType;
   imgs: GalleryImage[];
-  setImgs: React.Dispatch<React.SetStateAction<GalleryImage[]>>;
+  setImgs: Dispatch<SetStateAction<GalleryImage[]>>;
   croppedImgs: GalleryImage[];
-  setCroppedImgs: React.Dispatch<React.SetStateAction<GalleryImage[]>>;
-  onSubmitCreate: (data: CreateFormStateType) => void | Promise<void>;
+  setCroppedImgs: Dispatch<SetStateAction<GalleryImage[]>>;
+  onSubmitCreate: (
+    data: CreateFormStateType,
+    imgs: GalleryImage[],
+    croppedImgs: GalleryImage[],
+    coordinates: ListingCoordinatesType,
+  ) => void | Promise<void>;
 };
 
 function CreateListingForm({
-  formCreate,
-  cityRef,
-  streetRef,
-  fieldState,
-  setFieldState,
-  fieldSuggestion,
-  setFieldSuggestion,
+  initialData,
   imgs,
   setImgs,
   croppedImgs,
   setCroppedImgs,
   onSubmitCreate,
 }: CreateListingFormProps) {
+  const formCreate = useFormContext<CreateFormStateType>();
+  const [fieldState, setFieldState] = useState("");
+  const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
+
+  const cityRef = useRef<HTMLDivElement>(null);
+  const streetRef = useRef<HTMLDivElement>(null);
   const cityField = formCreate.register("property.city", {
     required: "City field is required",
   });
@@ -50,16 +56,13 @@ function CreateListingForm({
     required: "Street field is required",
   });
   const price = formCreate.watch("price");
-  const selectedRentalFilters = formCreate.watch("filters");
   const maxPrice = 20000;
 
-  const [mainFilters, setMainFilters] = useState<MainFiltersStateType>({
-    price: 250,
-    buildingType: "APARTMENT_BUILDING",
-    numberOfLevels: 0,
-    numberOfRooms: 1,
-    squareMeters: 0,
-  });
+  useEffect(() => {
+    if (initialData) {
+      formCreate.reset(initialData);
+    }
+  }, [formCreate, initialData]);
 
   const onAddressChange = async (
     e: ChangeEvent<HTMLInputElement>,
@@ -78,29 +81,42 @@ function CreateListingForm({
     setFieldSuggestion(dataArr);
   };
 
-  const onMainFilterChange = <K extends keyof MainFiltersStateType>(
-    key: K,
-    value: MainFiltersStateType[K],
-  ) => {
-    setMainFilters((prev) => ({ ...prev, [key]: value }));
-  };
-  const onRentalFilterChange = (filterId: number, value: -1 | 0 | 1) => {
-    const currentFilters = formCreate.getValues("filters");
-    const nextFilters = [
-      ...currentFilters.filter((filter) => filter.id !== filterId),
-      { id: filterId, value },
-    ];
+  useEffect(() => {
+    const closeSuggestionList = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return;
+      if (
+        !cityRef.current?.contains(e.target) &&
+        !streetRef.current?.contains(e.target)
+      ) {
+        setFieldState("");
+        setFieldSuggestion([]);
+      }
+    };
+    document.addEventListener("click", closeSuggestionList);
+    return () => {
+      document.removeEventListener("click", closeSuggestionList);
+    };
+  }, [cityRef, setFieldState, setFieldSuggestion, streetRef]);
 
-    formCreate.setValue("filters", nextFilters, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
   return (
     <form
       className="space-y-8"
       noValidate
-      onSubmit={formCreate.handleSubmit(onSubmitCreate)}
+      onSubmit={formCreate.handleSubmit(async (data) => {
+        const coordinatesData = await GeoService.geocoding<
+          GeoApiResponseType[]
+        >(data.property.city, data.property.street, data.property.home_number);
+        const coordinate =
+          coordinatesData.length === 1
+            ? coordinatesData[0]?.properties
+            : undefined;
+
+        await onSubmitCreate(data, imgs, croppedImgs, {
+          latitude: coordinate?.lat ?? null,
+          longitude: coordinate?.lon ?? null,
+        });
+        formCreate.reset();
+      })}
     >
       <fieldset>
         <legend className="text-xl font-semibold text-[#16324f] dark:text-white">
@@ -135,8 +151,6 @@ function CreateListingForm({
               <div className="absolute w-full z-20">
                 <Suggestions
                   suggestions={fieldSuggestion}
-                  getKey={(suggestion) => suggestion}
-                  renderSuggestion={(suggestion) => suggestion}
                   onSuggestionClick={(suggestion) => {
                     formCreate.setValue("property.city", suggestion, {
                       shouldValidate: true,
@@ -168,8 +182,6 @@ function CreateListingForm({
               <div className="absolute w-full z-20">
                 <Suggestions
                   suggestions={fieldSuggestion}
-                  getKey={(suggestion) => suggestion}
-                  renderSuggestion={(suggestion) => suggestion}
                   onSuggestionClick={(suggestion) => {
                     formCreate.setValue("property.street", suggestion, {
                       shouldValidate: true,
@@ -337,13 +349,7 @@ function CreateListingForm({
           </label>
         </div>
       </fieldset>
-      <RentalFilters
-        mainFilters={mainFilters}
-        onMainFilterChange={onMainFilterChange}
-        onRentalFilterChange={onRentalFilterChange}
-        selectedRentalFilters={selectedRentalFilters}
-        // mode="set"
-      />
+      <RentalFilters />
       <ImgGallery
         imgs={imgs}
         setImgs={setImgs}

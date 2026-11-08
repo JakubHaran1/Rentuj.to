@@ -76,6 +76,11 @@ type GeoApiResponseType = {
   };
 };
 
+type ListingCoordinatesType = {
+  latitude: number | null;
+  longitude: number | null;
+};
+
 type RentalFiltersType = {
   pk: number;
   name: string;
@@ -106,6 +111,7 @@ export type {
   PropertyListingType,
   CreateFormStateType,
   GeoApiResponseType,
+  ListingCoordinatesType,
   RentalFiltersType,
   RentalFilterAssignmentType,
   RentalFilterResponseType,

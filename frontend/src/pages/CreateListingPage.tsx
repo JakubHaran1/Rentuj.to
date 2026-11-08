@@ -1,22 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
+import { useState } from "react";
 
 import type { GalleryImage } from "../types/imgTypes";
 import type {
   CreateFormStateType,
-  GeoApiResponseType,
+  ListingCoordinatesType,
 } from "../types/propertyTypes";
 
 import { RentalService } from "../services/RentalService";
-import { GeoService } from "../services/geoService";
 import CreateListingForm from "../components/createListings/CreateListingForm";
 function CreateListing() {
-  const [fieldState, setFieldState] = useState("");
-  const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
-
-  const cityRef = useRef<HTMLDivElement>(null);
-  const streetRef = useRef<HTMLDivElement>(null);
-
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
   const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);
 
@@ -40,16 +33,13 @@ function CreateListing() {
       },
     },
   });
-  const resetCreateForm = () => {
-    formCreate.reset();
-    setFieldState("");
-    setFieldSuggestion([]);
-    setImgs([]);
-    setCroppedImgs([]);
-  };
-  const onSubmitCreate = async (data: CreateFormStateType) => {
-    setFieldSuggestion([]);
 
+  const onSubmitCreate = async (
+    data: CreateFormStateType,
+    imgs: GalleryImage[],
+    croppedImgs: GalleryImage[],
+    coordinates: ListingCoordinatesType,
+  ) => {
     const apartmentPhotos = imgs
       .map(
         (image) =>
@@ -59,48 +49,18 @@ function CreateListing() {
       .map((image) => image.file)
       .filter((file) => file.size > 0);
 
-    const { city, street, home_number } = data.property;
-    const coordinates_data = await GeoService.geocoding<GeoApiResponseType[]>(
-      city,
-      street,
-      home_number,
-    );
-
-    const locations = coordinates_data.map(
-      ({ properties: { address_line1, formatted, lat, lon } }) => ({
-        address_line1,
-        formatted,
-        lat: String(lat),
-        lon: String(lon),
-      }),
-    );
-
-    const coordinate = locations.length === 1 ? locations[0] : undefined;
     const dataToSend = {
       ...data,
       date_active: data.date_active || null,
-      latitude: coordinate ? Number(coordinate.lat) : null,
-      longitude: coordinate ? Number(coordinate.lon) : null,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
       apartment_photos: apartmentPhotos,
     };
 
     await RentalService.createPropertyItem(dataToSend);
-    resetCreateForm();
+    setImgs([]);
+    setCroppedImgs([]);
   };
-
-  useEffect(() => {
-    const closeSuggestionList = (e: MouseEvent) => {
-      if (!(e.target instanceof Node)) return;
-      if (
-        !cityRef.current?.contains(e.target) &&
-        !streetRef.current?.contains(e.target)
-      ) {
-        setFieldState("");
-        setFieldSuggestion([]);
-      }
-    };
-    document.addEventListener("click", closeSuggestionList);
-  }, []);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -113,20 +73,15 @@ function CreateListing() {
             Add the property details that will be shown in your listing.
           </p>
         </div>
-        <CreateListingForm
-          formCreate={formCreate}
-          cityRef={cityRef}
-          streetRef={streetRef}
-          fieldState={fieldState}
-          setFieldState={setFieldState}
-          fieldSuggestion={fieldSuggestion}
-          setFieldSuggestion={setFieldSuggestion}
-          imgs={imgs}
-          setImgs={setImgs}
-          croppedImgs={croppedImgs}
-          setCroppedImgs={setCroppedImgs}
-          onSubmitCreate={onSubmitCreate}
-        />
+        <FormProvider {...formCreate}>
+          <CreateListingForm
+            imgs={imgs}
+            setImgs={setImgs}
+            croppedImgs={croppedImgs}
+            setCroppedImgs={setCroppedImgs}
+            onSubmitCreate={onSubmitCreate}
+          />
+        </FormProvider>
       </section>
     </main>
   );
