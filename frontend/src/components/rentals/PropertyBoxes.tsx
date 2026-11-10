@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { PropertyListingType } from "../../types/propertyTypes";
 import Button from "../common/Button";
 import ConfirmDeletePopUp from "./ConfirmDeletePopUp";
-
+import { useNavigate } from "react-router-dom";
 type PropertyBoxesProps = {
   boxType: string;
   boxData: PropertyListingType[];
@@ -18,7 +18,7 @@ function PropertyBoxes({
 }: PropertyBoxesProps) {
   const [listingToDelete, setListingToDelete] =
     useState<PropertyListingType | null>(null);
-
+  const navigate = useNavigate();
   return (
     <>
       <section className="mt-10" aria-labelledby={boxType}>
@@ -35,6 +35,7 @@ function PropertyBoxes({
 
             return (
               <article
+                onClick={() => navigate(`/rental-detail/${listing.pk}`)}
                 className="flex flex-col overflow-hidden rounded-xl border border-[#c2c9d2] bg-[#e9edf2] shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row"
                 key={listing.pk}
               >
@@ -54,7 +55,7 @@ function PropertyBoxes({
 
                 <div className="flex min-w-0 flex-1 flex-col justify-between p-5 sm:p-6">
                   <div>
-                    <div className="flex items-start justify-between gap-4">
+                    <div className=" flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-xl font-semibold text-[#16324f] dark:text-white">
                           {listing.title}
@@ -67,7 +68,10 @@ function PropertyBoxes({
                       {editable && (
                         <div className="flex shrink-0 items-center gap-2">
                           <Button
-                            to={`/listing-edit/${listing.pk}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/listing-edit/${listing.pk}`);
+                            }}
                             aria-label={`Edit ${listing.title}`}
                             className="!p-2"
                             variant="secondary"
@@ -119,11 +123,13 @@ function PropertyBoxes({
         </div>
       </section>
 
-      <ConfirmDeletePopUp
-        listingToDelete={listingToDelete}
-        setListingToDelete={setListingToDelete}
-        onDelete={onDelete}
-      />
+      {editable && (
+        <ConfirmDeletePopUp
+          listingToDelete={listingToDelete}
+          setListingToDelete={setListingToDelete}
+          onDelete={onDelete}
+        />
+      )}
     </>
   );
 }

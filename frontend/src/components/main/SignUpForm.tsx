@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 
 import Button from "../common/Button";
 import Input from "../common/Input";
-import IconButton from "../common/IconButton";
 import ErrorMessage from "../common/ErrorMessage";
 
 import type { RegisterUserType } from "../../types/userTypes";
@@ -95,15 +94,16 @@ function SignUpForm({ isOpen, onToggle }: SignUpFormProps) {
         className="account-menu__panel absolute right-0 z-20 mt-2 w-[min(20rem,90vw)] rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <IconButton
-          variant="close"
-          className="text-right"
+        <button
+          className="cursor-pointer text-right"
           onClick={(event) => {
             event.preventDefault();
             onToggle();
             setRegisterStatus(false);
           }}
-        />
+        >
+          <i className="fa-solid fa-x text-sm text-[#16324f] text-xs dark:text-white"></i>
+        </button>
         {!registerStatus ? (
           <>
             {errors.root?.server && (

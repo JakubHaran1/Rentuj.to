@@ -4,7 +4,6 @@ import { AuthService } from "../../services/authService";
 import Button from "../common/Button";
 import type { LoginCredentialsType } from "../../types/userTypes";
 import { useUserContext } from "../context/UserContext";
-import IconButton from "../common/IconButton";
 import { useState } from "react";
 import Input from "../common/Input";
 import ErrorMessage from "../common/ErrorMessage";
@@ -94,14 +93,16 @@ function SignInForm({
           noValidate
           onSubmit={loginForm.handleSubmit(onSubmitLogin)}
         >
-          <IconButton
-            variant="close"
-            className="text-right"
+          <button
+            className="cursor-pointer text-right"
             onClick={(event) => {
               event.preventDefault();
               onToggle();
             }}
-          />
+          >
+            <i className="fa-solid fa-x text-sm text-[#16324f] text-xs dark:text-white"></i>
+          </button>
+
           {loginForm.formState.errors.root?.server && (
             <ErrorMessage
               txt={loginForm.formState.errors.root.server.message}
@@ -165,15 +166,16 @@ function SignInForm({
           noValidate
           onSubmit={remindForm.handleSubmit(onSubmitRemind)}
         >
-          <IconButton
-            variant="close"
-            className="text-right"
+          <button
+            className="cursor-pointer text-right"
             onClick={(event) => {
               event.preventDefault();
               onToggle();
               onResetRemind();
             }}
-          />
+          >
+            <i className="fa-solid fa-x text-sm text-[#16324f] text-xs dark:text-white"></i>
+          </button>
           {remindForm.formState.errors.root?.server && (
             <ErrorMessage
               txt={remindForm.formState.errors.root.server.message}

@@ -60,8 +60,44 @@ export const RentalService = {
     );
     return resp;
   },
+
   async getRentalFilters(): Promise<RentalFiltersType[]> {
     const resp = await publicApi.get<RentalFiltersType[]>("rentals/filters");
     return resp.data;
+  },
+  async getRentalDetail(pk: string): Promise<PropertyListingType> {
+    const resp = await publicApi.get<PropertyListingType>(
+      `rentals/properties/${pk}`,
+      {},
+    );
+    return resp.data;
+  },
+  getFavourite(): PropertyListingType[] {
+    const fav = localStorage.getItem("rentals_fav");
+    return fav ? JSON.parse(fav) : [];
+  },
+
+  getFavouriteIds(): number[] {
+    const fav = localStorage.getItem("rentals_pks");
+    return fav ? JSON.parse(fav) : [];
+  },
+
+  saveFavourite(data: PropertyListingType) {
+    const fav = this.getFavourite();
+
+    let fav_set;
+
+    if (fav.some((el) => el.pk === data.pk)) {
+      fav_set = fav.filter((el) => el.pk !== data.pk);
+    } else {
+      fav_set = [...fav, data];
+    }
+    const fav_json = JSON.stringify(fav_set);
+
+    const fav_pks = fav_set.map((el) => el.pk);
+    const pks_json = JSON.stringify(fav_pks);
+
+    localStorage.setItem("rentals_fav", fav_json);
+    localStorage.setItem("rentals_pks", pks_json);
   },
 };

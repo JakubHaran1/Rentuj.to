@@ -263,16 +263,6 @@ function CreateListingForm({
                     message: `Price cannot exceed ${maxPrice} PLN`,
                   },
                 })}
-                onChange={(event) => {
-                  const nextPrice = Math.min(
-                    maxPrice,
-                    Math.max(0, Number(event.target.value)),
-                  );
-                  formCreate.setValue("price", nextPrice, {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }}
               />
               <span className="mb-2 text-xs text-[#6b7280] dark:text-slate-300">
                 PLN

@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import UpdateUserPage from "./pages/UpdateUserPage";
 import CreateListing from "./pages/CreateListingPage";
 import MyListingPage from "./pages/MyListingsPage";
+import RentalsDetailPage from "./pages/RentalsDetailPage";
 
 import ThanksPage from "./pages/static_pages/ThanksPage";
 import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
@@ -42,6 +43,7 @@ function App() {
             path="/password-reset/:uidb64/:token"
             element={<PasswordChangePage />}
           />
+          <Route path="/rental-detail/:pk" element={<RentalsDetailPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/profile/edit" element={<UpdateUserPage />} />
             <Route path="/listing-create" element={<CreateListing />} />
