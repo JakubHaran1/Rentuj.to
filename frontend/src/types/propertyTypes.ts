@@ -1,3 +1,4 @@
+import type { GalleryImage, GalleryImageResponse } from "./imgTypes";
 import type { UserType } from "./userTypes";
 
 // Property types
@@ -10,24 +11,30 @@ type PropertyType = {
 };
 
 type PropertyDetailType = {
-  property: PropertyType;
+  pk: number;
   owner: UserType;
-  description: string;
+  description: string | null;
   number_of_levels: number;
   number_of_rooms: number;
   square_meters: number;
   price: number;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   building_type: BuildingType;
   date_active: string | null;
   filters: RentalFilterResponseType[];
-  apartment_photos: PropertyImageType[] | FileList;
+  apartment_photos: GalleryImage[];
 };
 
-type PropertyImageType = {
-  pk: number;
-  img: string;
+type PropertyDetailResponseType = Omit<PropertyDetailType, "apartment_photos"> & {
+  apartment_photos: GalleryImageResponse[];
+};
+
+type PropertyListingResponseType = Omit<
+  PropertyListingType,
+  "property_details"
+> & {
+  property_details: PropertyDetailResponseType;
 };
 
 type BuildingType =
@@ -46,23 +53,23 @@ type PropertyListingType = {
   street: string;
   home_number: number;
   floor_number: number;
-  property_details: PropertyDetailType | null;
+  property_details: PropertyDetailType;
 };
+
 type CreatePropertyDataType = Omit<
   PropertyDetailType,
-  "owner" | "latitude" | "longitude" | "apartment_photos" | "filters"
+  "pk" | "owner" | "apartment_photos" | "filters"
 > & {
-  date_active: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  apartment_photos: File[];
+  property: PropertyType;
   filters: RentalFilterAssignmentType[];
+  apartment_photos: GalleryImage[];
 };
 
 type CreateFormStateType = Omit<
   PropertyDetailType,
-  "latitude" | "longitude" | "owner" | "filters"
+  "pk" | "owner" | "latitude" | "longitude" | "filters" | "apartment_photos"
 > & {
+  property: PropertyType;
   address: string;
   filters: RentalFilterAssignmentType[];
 };
@@ -116,5 +123,6 @@ export type {
   RentalFilterAssignmentType,
   RentalFilterResponseType,
   MainFiltersStateType,
-  PropertyImageType,
+  PropertyDetailResponseType,
+  PropertyListingResponseType,
 };

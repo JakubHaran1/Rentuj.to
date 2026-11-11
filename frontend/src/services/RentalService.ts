@@ -1,15 +1,35 @@
 import { privateApi } from "../api/private";
 import { publicApi } from "../api/public";
+import type { GalleryImageResponse, GalleryImage } from "../types/imgTypes";
 import type {
   CreatePropertyDataType,
-  PropertyDetailType,
+  PropertyListingResponseType,
   PropertyListingType,
   RentalFiltersType,
 } from "../types/propertyTypes";
 
+const toGalleryImage = (photo: GalleryImageResponse): GalleryImage => ({
+  id: String(photo.pk),
+  pk: photo.pk,
+  file: null,
+  previewUrl: photo.img,
+  isMain: photo.is_main,
+});
+
+const toPropertyListing = (
+  listing: PropertyListingResponseType,
+): PropertyListingType => ({
+  ...listing,
+  property_details: {
+    ...listing.property_details,
+    apartment_photos:
+      listing.property_details.apartment_photos.map(toGalleryImage),
+  },
+});
+
 export const RentalService = {
   async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
-    const resp = await publicApi.get<PropertyListingType[]>(
+    const resp = await publicApi.get<PropertyListingResponseType[]>(
       "rentals/properties",
       {
         params: {
@@ -17,14 +37,7 @@ export const RentalService = {
         },
       },
     );
-    return resp.data;
-  },
-
-  async getPropertyItem(id: string): Promise<PropertyDetailType> {
-    const resp = await publicApi.get<PropertyDetailType>(
-      `rentals/properties/${id}`,
-    );
-    return resp.data;
+    return resp.data.map(toPropertyListing);
   },
 
   async deleteProperty(id: number): Promise<void> {
@@ -41,19 +54,17 @@ export const RentalService = {
       property_details: propertyDetails,
     });
 
-    const files =
-      apartment_photos instanceof FileList
-        ? Array.from(apartment_photos)
-        : apartment_photos;
-
     await Promise.all(
-      files.map((file) => {
+      apartment_photos.map((photo) => {
+        if (!photo.file) return Promise.resolve();
+
         const formData = new FormData();
         formData.append(
           "property_details",
           String(resp.data.property_details.pk),
         );
-        formData.append("img", file);
+        formData.append("img", photo.file);
+        formData.append("is_main", String(photo.isMain));
 
         return privateApi.post("rentals/property-imgs", formData);
       }),
@@ -61,16 +72,16 @@ export const RentalService = {
     return resp;
   },
 
-  async getRentalFilters(): Promise<RentalFiltersType[]> {
+  async getPropertyFilters(): Promise<RentalFiltersType[]> {
     const resp = await publicApi.get<RentalFiltersType[]>("rentals/filters");
     return resp.data;
   },
-  async getRentalDetail(pk: string): Promise<PropertyListingType> {
-    const resp = await publicApi.get<PropertyListingType>(
+  async getPropertyDetail(pk: string): Promise<PropertyListingType> {
+    const resp = await publicApi.get<PropertyListingResponseType>(
       `rentals/properties/${pk}`,
       {},
     );
-    return resp.data;
+    return toPropertyListing(resp.data);
   },
   getFavourite(): PropertyListingType[] {
     const fav = localStorage.getItem("rentals_fav");

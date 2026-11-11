@@ -29,20 +29,40 @@ function ImgGallery({
 }: ImgGalleryProps) {
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [errorGallery, setErrorGallery] = useState("");
+
+  const setMainPhoto = useCallback(
+    (newImgArr: GalleryImage[]) => {
+      if (imgs.length > 0) {
+        const mainImg = imgs.shift();
+        if (!mainImg) {
+          setImgs((prev) => [...prev, ...newImgArr]);
+          return;
+        }
+        mainImg.isMain = true;
+        setImgs((prev) => [mainImg, ...prev, ...newImgArr]);
+      }
+      setImgs((prev) => {
+        return [...prev, ...newImgArr];
+      });
+    },
+    [imgs, setImgs],
+  );
+
   const onAddImg = useCallback(
     (files: File[]) => {
       const acceptedImg = files.map((file) => ({
         id: crypto.randomUUID(),
         file,
         previewUrl: URL.createObjectURL(file),
+        isMain: false,
       }));
       if (imgs.length > MAX_PROPERTY_IMAGES) {
         setErrorGallery(`You can't select ${MAX_PROPERTY_IMAGES} photos`);
         return;
       }
-      setImgs((prev) => [...prev, ...acceptedImg]);
+      setMainPhoto(acceptedImg);
     },
-    [imgs, setImgs],
+    [imgs, setMainPhoto],
   );
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -62,7 +82,7 @@ function ImgGallery({
     }
 
     reordered.splice(newIndex, 0, movedImage);
-    setImgs(reordered);
+    setMainPhoto(reordered);
   };
 
   function handleCropSave(updatedImage: GalleryImage) {

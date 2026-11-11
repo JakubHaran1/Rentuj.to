@@ -28,10 +28,7 @@ function PropertyBoxes({
         <div className="space-y-4">
           {boxData.map((listing) => {
             const details = listing.property_details;
-            const mainImage =
-              details &&
-              Array.isArray(details.apartment_photos) &&
-              details.apartment_photos[0]?.img;
+            const mainImage = details.apartment_photos[0]?.previewUrl;
 
             return (
               <article
@@ -39,7 +36,7 @@ function PropertyBoxes({
                 className="flex flex-col overflow-hidden rounded-xl border border-[#c2c9d2] bg-[#e9edf2] shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row"
                 key={listing.pk}
               >
-                <div className="h-52 shrink-0 bg-slate-200 dark:bg-slate-800 sm:h-auto sm:w-72">
+                <div className="h-52 shrink-0 bg-slate-200 dark:bg-slate-800 sm:w-72">
                   {mainImage ? (
                     <img
                       src={mainImage}
@@ -47,7 +44,7 @@ function PropertyBoxes({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full min-h-52 items-center justify-center text-sm text-[#6b7280] dark:text-slate-400">
+                    <div className="flex h-full items-center justify-center text-sm text-[#6b7280] dark:text-slate-400">
                       No image available
                     </div>
                   )}
@@ -90,31 +87,23 @@ function PropertyBoxes({
                       )}
                     </div>
 
-                    {details ? (
-                      <>
-                        <div className="mt-5 flex flex-wrap gap-2 text-sm text-[#536454] dark:text-slate-300">
-                          <span className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                            {details.square_meters} m²
-                          </span>
-                          {details.filters.map((filter) => (
-                            <span
-                              className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800"
-                              key={filter.id}
-                            >
-                              {filter.name}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="mt-5 text-lg font-semibold text-[#1f2937] dark:text-slate-100">
-                          {details.price}{" "}
-                          <span className="text-sm font-normal">/ month</span>
-                        </p>
-                      </>
-                    ) : (
-                      <p className="mt-5 text-sm text-[#6b7280] dark:text-slate-400">
-                        Property details are unavailable.
-                      </p>
-                    )}
+                    <div className="mt-5 flex flex-wrap gap-2 text-sm text-[#536454] dark:text-slate-300">
+                      <span className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
+                        {details.square_meters} m²
+                      </span>
+                      {details.filters.map((filter) => (
+                        <span
+                          className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800"
+                          key={filter.id}
+                        >
+                          {filter.name}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-5 text-lg font-semibold text-[#1f2937] dark:text-slate-100">
+                      {details.price}{" "}
+                      <span className="text-sm font-normal">/ month</span>
+                    </p>
                   </div>
                 </div>
               </article>

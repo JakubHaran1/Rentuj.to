@@ -60,7 +60,7 @@ class PropertyImgSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyImg
-        fields = ["pk", "img", "property_details"]
+        fields = ["pk", "img", "is_main", "property_details"]
 
     def create(self, validated_data: dict) -> PropertyImg:
         property_details = validated_data["property_details"]

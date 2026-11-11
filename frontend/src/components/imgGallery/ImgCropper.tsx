@@ -110,8 +110,8 @@ export default function ImgCropper({
       const cropped = await createCroppedImage(
         selectedImage.previewUrl,
         cropArea,
-        selectedImage.file.name,
-        selectedImage.file.type,
+        selectedImage.file?.name ?? "photo.jpg",
+        selectedImage.file?.type ?? "image/jpeg",
       );
 
       setPreviewUrl(cropped.previewUrl);
@@ -133,7 +133,7 @@ export default function ImgCropper({
     fetch(previewUrl)
       .then((response) => response.blob())
       .then((blob) => {
-        const file = new File([blob], selectedImage.file.name, {
+        const file = new File([blob], selectedImage.file?.name ?? "photo.jpg", {
           type: blob.type,
         });
 

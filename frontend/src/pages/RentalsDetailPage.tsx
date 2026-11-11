@@ -8,27 +8,20 @@ import Map from "../components/common/Map";
 
 import type { PropertyListingType } from "../types/propertyTypes";
 import Button from "../components/common/Button";
-const defaultValue: PropertyListingType = {
-  pk: 0,
-  title: "",
-  city: "",
-  street: "",
-  home_number: 0,
-  floor_number: 0,
-  property_details: null,
-};
+
 function RentalsDetailPage() {
   const { pk } = useParams();
   const [rentalError, setRentalError] = useState("");
 
-  const [rentalOffert, setRentalOffert] =
-    useState<PropertyListingType>(defaultValue);
+  const [rentalOffert, setRentalOffert] = useState<PropertyListingType | null>(
+    null,
+  );
   const [isSaved, setIsSaved] = useState<boolean>(false);
   useEffect(() => {
-    async function handleGetRentalDetail() {
+    async function handlegetPropertyDetail() {
       try {
         if (!pk) throw new AxiosError("No rental identifier");
-        const resp = await RentalService.getRentalDetail(pk);
+        const resp = await RentalService.getPropertyDetail(pk);
 
         setRentalOffert(resp);
         setIsSaved(RentalService.getFavouriteIds().includes(Number(pk)));
@@ -36,14 +29,11 @@ function RentalsDetailPage() {
         handleDrfGetError(error, setRentalError);
       }
     }
-    handleGetRentalDetail();
+    handlegetPropertyDetail();
   }, [pk]);
 
   const details = rentalOffert?.property_details;
-  const mainImage =
-    details &&
-    Array.isArray(details.apartment_photos) &&
-    details.apartment_photos[0]?.img;
+  const mainImage = details?.apartment_photos[0]?.previewUrl;
 
   const handleSaveBtn = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -127,7 +117,7 @@ function RentalsDetailPage() {
               className="mt-3 text-sm leading-7 text-[#6b7280]
             dark:text-slate-300"
             >
-              {details?.description ?? "Property details are unavailable."}
+              {details?.description}
             </p>
 
             {/* Filters */}

@@ -46,8 +46,8 @@ function CreateListing() {
           croppedImgs.find((croppedImage) => croppedImage.id === image.id) ??
           image,
       )
-      .map((image) => image.file)
-      .filter((file) => file.size > 0);
+      .filter((image) => image.file && image.file.size > 0)
+      .map((image, index) => ({ ...image, isMain: index === 0 }));
 
     const dataToSend = {
       ...data,

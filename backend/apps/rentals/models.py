@@ -79,7 +79,8 @@ class PropertyFilter(models.Model):
         on_delete=models.CASCADE,
         related_name="property_assignments",
     )
-    value = models.IntegerField(default=0, choices=[(-1, "Exclude"), (0, "Neutral"), (1, "Include")])
+    value = models.IntegerField(
+        default=0, choices=[(-1, "Exclude"), (0, "Neutral"), (1, "Include")])
 
     class Meta:
         constraints = [
@@ -94,3 +95,4 @@ class PropertyImg(models.Model):
     img = models.ImageField(upload_to=create_path, default="")
     property_details = models.ForeignKey(PropertyDetail, related_name="apartment_photos",
                                          on_delete=models.CASCADE)
+    is_main = models.BooleanField(default=False)

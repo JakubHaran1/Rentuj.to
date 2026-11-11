@@ -23,8 +23,7 @@ function RentalFilters({
   mode = "default",
 }: MainFiltersPropsType) {
   const maxPrice = 20000;
-  const { getValues, setValue, watch } =
-    useFormContext<CreateFormStateType>();
+  const { getValues, setValue, watch } = useFormContext<CreateFormStateType>();
   const selectedRentalFilters = watch("filters");
   const [mainFilters, setMainFilters] = useState<MainFiltersStateType>({
     price: 250,
@@ -57,8 +56,8 @@ function RentalFilters({
   };
 
   useEffect(() => {
-    async function getRentalFilters() {
-      const resp = await RentalService.getRentalFilters();
+    async function getPropertyFilters() {
+      const resp = await RentalService.getPropertyFilters();
       setRentalFilters(
         resp.map((filter) => ({
           ...filter,
@@ -66,7 +65,7 @@ function RentalFilters({
         })),
       );
     }
-    getRentalFilters();
+    getPropertyFilters();
   }, []);
 
   return (
