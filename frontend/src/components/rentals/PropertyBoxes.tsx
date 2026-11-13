@@ -27,8 +27,8 @@ function PropertyBoxes({
         </h2>
         <div className="space-y-4">
           {boxData.map((listing) => {
-            const details = listing.property_details;
-            const mainImage = details.apartment_photos[0]?.previewUrl;
+            const details = listing;
+            const mainImage = details.apartment_photos[0]?.img;
 
             return (
               <article
@@ -58,15 +58,17 @@ function PropertyBoxes({
                           {listing.title}
                         </h3>
                         <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
-                          {listing.street} {listing.home_number}, {listing.city}
+                          {listing.property.street}{" "}
+                          {listing.property.home_number},{" "}
+                          {listing.property.city}
                         </p>
                       </div>
 
                       {editable && (
                         <div className="flex shrink-0 items-center gap-2">
                           <Button
-                            onClick={(event) => {
-                              event.stopPropagation();
+                            onClick={(e) => {
+                              e.stopPropagation();
                               navigate(`/listing-edit/${listing.pk}`);
                             }}
                             aria-label={`Edit ${listing.title}`}
@@ -79,7 +81,10 @@ function PropertyBoxes({
                             type="button"
                             aria-label={`Delete ${listing.title}`}
                             className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-500 px-3 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-500 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
-                            onClick={() => setListingToDelete(listing)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setListingToDelete(listing);
+                            }}
                           >
                             <i className="fa-solid fa-trash" />
                           </button>
@@ -89,12 +94,12 @@ function PropertyBoxes({
 
                     <div className="mt-5 flex flex-wrap gap-2 text-sm text-[#536454] dark:text-slate-300">
                       <span className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                        {details.square_meters} m²
+                        {listing.property.square_meters} m²
                       </span>
                       {details.filters.map((filter) => (
                         <span
                           className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800"
-                          key={filter.id}
+                          key={filter.pk}
                         >
                           {filter.name}
                         </span>

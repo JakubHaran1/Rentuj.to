@@ -18,22 +18,22 @@ function RentalsDetailPage() {
   );
   const [isSaved, setIsSaved] = useState<boolean>(false);
   useEffect(() => {
-    async function handlegetPropertyDetail() {
+    async function handleGetPropertyDetail() {
       try {
         if (!pk) throw new AxiosError("No rental identifier");
         const resp = await RentalService.getPropertyDetail(pk);
 
         setRentalOffert(resp);
-        setIsSaved(RentalService.getFavouriteIds().includes(Number(pk)));
+        setIsSaved(RentalService.getFavouriteIdList().includes(Number(pk)));
       } catch (error: unknown) {
         handleDrfGetError(error, setRentalError);
       }
     }
-    handlegetPropertyDetail();
+    handleGetPropertyDetail();
   }, [pk]);
 
-  const details = rentalOffert?.property_details;
-  const mainImage = details?.apartment_photos[0]?.previewUrl;
+  const details = rentalOffert;
+  const mainImage = details?.apartment_photos[0]?.img;
 
   const handleSaveBtn = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -41,8 +41,8 @@ function RentalsDetailPage() {
   ) => {
     event.preventDefault();
     RentalService.saveFavourite(rentalOffert);
-    console.log(RentalService.getFavouriteIds().includes(rentalOffert.pk));
-    setIsSaved(RentalService.getFavouriteIds().includes(rentalOffert.pk));
+    console.log(RentalService.getFavouriteIdList().includes(rentalOffert.pk));
+    setIsSaved(RentalService.getFavouriteIdList().includes(rentalOffert.pk));
   };
   return (
     <section className="mt-10">
@@ -101,8 +101,8 @@ function RentalsDetailPage() {
             </button>
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-gray-500">
-                {rentalOffert.street} {rentalOffert.home_number},{" "}
-                {rentalOffert.city}
+                {rentalOffert.property.street} {rentalOffert.property.home_number},{" "}
+                {rentalOffert.property.city}
               </span>
             </div>
 
@@ -132,7 +132,7 @@ function RentalsDetailPage() {
               <div className="flex flex-wrap gap-2">
                 {details?.filters.map((filter) => (
                   <span
-                    key={filter.id}
+                    key={filter.pk}
                     className="rounded-full border border-[#c2c9d2]
                     bg-[#e9edf2] px-3 py-2 text-xs font-medium
                     text-[#16324f] dark:bg-slate-800

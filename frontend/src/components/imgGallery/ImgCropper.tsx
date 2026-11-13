@@ -5,7 +5,7 @@ import ErrorMessage from "../common/ErrorMessage";
 
 type ImgCropperProps = {
   images: GalleryImage[];
-  initialImageId: string;
+  initialImageId: GalleryImage["pk"];
   onClose: () => void;
   onSave: (image: GalleryImage) => void;
 };
@@ -79,7 +79,7 @@ export default function ImgCropper({
   const [error, setError] = useState<string | null>(null);
   const savedPreviewUrl = useRef<string | null>(null);
   const [isEdit, setIsEdit] = useState(true);
-  const selectedImage = images.find((image) => image.id === selectedImageId);
+  const selectedImage = images.find((image) => image.pk === selectedImageId);
 
   // Block underground layer
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function ImgCropper({
 
     try {
       const cropped = await createCroppedImage(
-        selectedImage.previewUrl,
+        selectedImage.img,
         cropArea,
         selectedImage.file?.name ?? "photo.jpg",
         selectedImage.file?.type ?? "image/jpeg",
@@ -140,7 +140,7 @@ export default function ImgCropper({
         onSave({
           ...selectedImage,
           file,
-          previewUrl,
+          img: previewUrl,
         });
       })
       .catch(() => {
@@ -170,8 +170,8 @@ export default function ImgCropper({
           <div>
             <div className="relative h-[min(60vh,480px)] overflow-hidden rounded-xl bg-slate-950">
               <Cropper
-                key={selectedImage.id}
-                image={selectedImage.previewUrl}
+                key={selectedImage.pk}
+                image={selectedImage.img}
                 crop={crop}
                 zoom={zoom}
                 aspect={4 / 3}
@@ -235,16 +235,16 @@ export default function ImgCropper({
               {images.map((image) => (
                 <button
                   type="button"
-                  key={image.id}
+                  key={image.pk}
                   className={`overflow-hidden rounded-lg border-2 ${
-                    image.id === selectedImageId
+                    image.pk === selectedImageId
                       ? "border-blue-500"
                       : "border-transparent"
                   }`}
-                  onClick={() => setSelectedImageId(image.id)}
+                  onClick={() => setSelectedImageId(image.pk)}
                 >
                   <img
-                    src={image.previewUrl}
+                    src={image.img}
                     alt="Choose photo to cut"
                     className="aspect-video w-full object-cover"
                   />

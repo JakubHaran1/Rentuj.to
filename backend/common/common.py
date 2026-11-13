@@ -47,6 +47,8 @@ def create_path(instance, filename: str):
     """Create path for imgs"""
     if hasattr(instance, "user"):
         obj_id = instance.user.pk
+    elif hasattr(instance, "listing"):
+        obj_id = instance.listing.owner.pk
     elif hasattr(instance, "property_details"):
         obj_id = instance.property_details.owner.pk
     else:

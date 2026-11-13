@@ -8,9 +8,9 @@ import {
   type SetStateAction,
 } from "react";
 import type {
-  CreateFormStateType,
+  CreateListingType,
   GeoApiResponseType,
-  ListingCoordinatesType,
+  PropertyCoordinatesType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
 import Suggestions from "./Suggestions";
@@ -22,16 +22,16 @@ import type { GalleryImage } from "../../types/imgTypes";
 import RentalFilters from "./RentalFilters";
 
 type CreateListingFormProps = {
-  initialData?: CreateFormStateType;
+  initialData?: CreateListingType;
   imgs: GalleryImage[];
   setImgs: Dispatch<SetStateAction<GalleryImage[]>>;
   croppedImgs: GalleryImage[];
   setCroppedImgs: Dispatch<SetStateAction<GalleryImage[]>>;
-  onSubmitCreate: (
-    data: CreateFormStateType,
+  onSubmitForm: (
+    data: CreateListingType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
-    coordinates: ListingCoordinatesType,
+    coordinates: PropertyCoordinatesType,
   ) => void | Promise<void>;
 };
 
@@ -41,9 +41,9 @@ function CreateListingForm({
   setImgs,
   croppedImgs,
   setCroppedImgs,
-  onSubmitCreate,
+  onSubmitForm,
 }: CreateListingFormProps) {
-  const formCreate = useFormContext<CreateFormStateType>();
+  const formCreate = useFormContext<CreateListingType>();
   const [fieldState, setFieldState] = useState("");
   const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
 
@@ -111,7 +111,7 @@ function CreateListingForm({
             ? coordinatesData[0]?.properties
             : undefined;
 
-        await onSubmitCreate(data, imgs, croppedImgs, {
+        await onSubmitForm(data, imgs, croppedImgs, {
           latitude: coordinate?.lat ?? null,
           longitude: coordinate?.lon ?? null,
         });

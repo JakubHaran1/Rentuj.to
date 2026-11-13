@@ -23,61 +23,72 @@ class Property(models.Model):
     city = models.CharField(max_length=80)
     street = models.CharField(max_length=80)
     home_number = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
+        default=1, validators=[MinValueValidator(1)])
     floor_number = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
+        default=1, validators=[MinValueValidator(1)])
+    number_of_levels = models.IntegerField(
+        default=1, validators=[MinValueValidator(1)])
+    number_of_rooms = models.IntegerField(
+        default=1, validators=[MinValueValidator(1)])
+    square_meters = models.FloatField(validators=[MinValueValidator(1)])
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    building_type = models.CharField(choices=BuildingType.choices)
 
     def __str__(self):
         return f"{self.title} | {self.street}  | {self.home_number}"
 
 
-class RentalFilter(models.Model):
+class PropertyFilterName(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
 
-class PropertyDetail(models.Model):
-    property = models.OneToOneField(
-        Property, related_name="property_details", on_delete=models.CASCADE)
+class Listing(models.Model):
+    property = models.ForeignKey(
+        Property, related_name="listings", on_delete=models.CASCADE)
     owner = models.ForeignKey(
-        User, related_name="properties", on_delete=models.CASCADE)
+        User, related_name="listings", on_delete=models.CASCADE)
+    title = models.CharField(max_length=150, blank=True, default="")
+    is_active = models.BooleanField(default=True)
     description = models.CharField(max_length=250, default="", null=True)
-    number_of_levels = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
-    number_of_rooms = models.IntegerField(
-        default=1, validators=[MinValueValidator(0)])
-    square_meters = models.FloatField(validators=[MinValueValidator(0)])
     price = models.FloatField(validators=[MinValueValidator(0)])
-    latitude = models.FloatField(null=True)
-    longitude = models.FloatField(null=True)
-    building_type = models.CharField(choices=BuildingType.choices)
     date_add = models.DateTimeField(auto_now_add=True)
     date_edit = models.DateTimeField(auto_now=True)
     date_active = models.DateField(null=True, blank=True)
 
     filters = models.ManyToManyField(
-        RentalFilter,
+        PropertyFilterName,
         blank=True,
-        related_name="properties",
+        related_name="listings",
         through="PropertyFilter",
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["property"],
+                condition=models.Q(is_active=True),
+                name="one_active_listing_per_property",
+            ),
+        ]
+
     def __str__(self):
-        return f"{self.property.title}"
+        return self.title or self.property.title
 
 
 class PropertyFilter(models.Model):
-    property_details = models.ForeignKey(
-        PropertyDetail,
+    listing = models.ForeignKey(
+        Listing,
         on_delete=models.CASCADE,
-        related_name="filter_assignments",
+        related_name="property_filters",
     )
     rental_filter = models.ForeignKey(
-        RentalFilter,
+        PropertyFilterName,
         on_delete=models.CASCADE,
-        related_name="property_assignments",
+        related_name="property_filters",
     )
     value = models.IntegerField(
         default=0, choices=[(-1, "Exclude"), (0, "Neutral"), (1, "Include")])
@@ -85,14 +96,14 @@ class PropertyFilter(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["property_details", "rental_filter"],
-                name="unique_property_rental_filter",
+                fields=["listing", "rental_filter"],
+                name="unique_listing_rental_filter",
             ),
         ]
 
 
 class PropertyImg(models.Model):
     img = models.ImageField(upload_to=create_path, default="")
-    property_details = models.ForeignKey(PropertyDetail, related_name="apartment_photos",
-                                         on_delete=models.CASCADE)
+    listing = models.ForeignKey(
+        Listing, related_name="apartment_photos", on_delete=models.CASCADE)
     is_main = models.BooleanField(default=False)

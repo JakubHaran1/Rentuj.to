@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type {
-  CreateFormStateType,
+  CreateListingType,
   MainFiltersStateType,
-  RentalFiltersType,
+  RentalFilterResponseType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
 import BuildingType from "./BuildingType";
@@ -14,17 +14,16 @@ type MainFiltersPropsType = {
   mode?: "default" | "set";
 };
 
-type RentalFilterOption = RentalFiltersType & {
-  value: -1 | 0 | 1;
-};
-
 function RentalFilters({
   filtersHeader = "Find the right fit",
   mode = "default",
 }: MainFiltersPropsType) {
   const maxPrice = 20000;
-  const { getValues, setValue, watch } = useFormContext<CreateFormStateType>();
+
+  const { getValues, setValue, watch } = useFormContext<CreateListingType>();
+
   const selectedRentalFilters = watch("filters");
+
   const [mainFilters, setMainFilters] = useState<MainFiltersStateType>({
     price: 250,
     buildingType: "APARTMENT_BUILDING",
@@ -32,8 +31,11 @@ function RentalFilters({
     numberOfRooms: 1,
     squareMeters: 0,
   });
+
   const [showRentalFilters, setShowRentalFilters] = useState(mode === "set");
-  const [rentalFilters, setRentalFilters] = useState<RentalFilterOption[]>([]);
+  const [rentalFilters, setRentalFilters] = useState<
+    RentalFilterResponseType[]
+  >([]);
 
   const onMainFilterChange = <K extends keyof MainFiltersStateType>(
     key: K,
@@ -45,8 +47,8 @@ function RentalFilters({
   const onRentalFilterChange = (filterId: number, value: -1 | 0 | 1) => {
     const currentFilters = getValues("filters");
     const nextFilters = [
-      ...currentFilters.filter((filter) => filter.id !== filterId),
-      { id: filterId, value },
+      ...currentFilters.filter((filter) => filter.pk !== filterId),
+      { pk: filterId, value },
     ];
 
     setValue("filters", nextFilters, {
@@ -231,7 +233,7 @@ function RentalFilters({
         >
           {rentalFilters.map((filter) => {
             const value =
-              selectedRentalFilters.find((item) => item.id === filter.pk)
+              selectedRentalFilters.find((item) => item.pk === filter.pk)
                 ?.value ?? 0;
 
             const isIncluded = value === 1;

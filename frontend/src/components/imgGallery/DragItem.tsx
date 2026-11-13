@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import type { GalleryImage } from "../../types/imgTypes";
 import { useSortable } from "@dnd-kit/react/sortable";
 type DragItemProps = {
-  id: string;
+  id: GalleryImage["pk"];
   children: ReactNode;
   index: number;
 };

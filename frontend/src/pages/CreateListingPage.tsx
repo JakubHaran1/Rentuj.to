@@ -3,8 +3,8 @@ import { useState } from "react";
 
 import type { GalleryImage } from "../types/imgTypes";
 import type {
-  CreateFormStateType,
-  ListingCoordinatesType,
+  CreateListingType,
+  PropertyCoordinatesType,
 } from "../types/propertyTypes";
 
 import { RentalService } from "../services/RentalService";
@@ -13,9 +13,8 @@ function CreateListing() {
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
   const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);
 
-  const formCreate = useForm<CreateFormStateType>({
+  const formCreate = useForm<CreateListingType>({
     defaultValues: {
-      address: "",
       description: "",
       number_of_levels: 0,
       number_of_rooms: 0,
@@ -24,6 +23,9 @@ function CreateListing() {
       building_type: "APARTMENT_BUILDING",
       date_active: "",
       filters: [],
+      latitude: null,
+      longitude: null,
+      apartment_photos: [],
       property: {
         title: "",
         city: "",
@@ -34,28 +36,18 @@ function CreateListing() {
     },
   });
 
-  const onSubmitCreate = async (
-    data: CreateFormStateType,
+  const onSubmitForm = async (
+    data: CreateListingType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
-    coordinates: ListingCoordinatesType,
+    coordinates: PropertyCoordinatesType,
   ) => {
-    const apartmentPhotos = imgs
-      .map(
-        (image) =>
-          croppedImgs.find((croppedImage) => croppedImage.id === image.id) ??
-          image,
-      )
-      .filter((image) => image.file && image.file.size > 0)
-      .map((image, index) => ({ ...image, isMain: index === 0 }));
-
-    const dataToSend = {
-      ...data,
-      date_active: data.date_active || null,
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
-      apartment_photos: apartmentPhotos,
-    };
+    const dataToSend = RentalService.preparePropertyDataToSend(
+      data,
+      imgs,
+      croppedImgs,
+      coordinates,
+    );
 
     await RentalService.createPropertyItem(dataToSend);
     setImgs([]);
@@ -79,7 +71,7 @@ function CreateListing() {
             setImgs={setImgs}
             croppedImgs={croppedImgs}
             setCroppedImgs={setCroppedImgs}
-            onSubmitCreate={onSubmitCreate}
+            onSubmitForm={onSubmitForm}
           />
         </FormProvider>
       </section>

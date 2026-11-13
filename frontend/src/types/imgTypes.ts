@@ -10,17 +10,11 @@ export interface CropArea {
   height: number;
 }
 
-// file is null and pk is set for images already stored on the server
+// Same shape as the backend PropertyImg. pk is a number for saved images
+// and a client-side UUID for new ones (those also carry the file to upload).
 export interface GalleryImage {
-  id: string;
-  file: File | null;
-  previewUrl: string;
-  isMain: boolean;
-  pk?: number;
-}
-
-export interface GalleryImageResponse {
-  pk: number;
+  pk: number | string;
   img: string;
   is_main: boolean;
+  file?: File;
 }

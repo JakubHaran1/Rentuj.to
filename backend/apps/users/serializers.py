@@ -19,7 +19,7 @@ class UserImgSerializer(ModelSerializer):
         model = UserImg
         fields = ["img", "user"]
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> UserImg:
         try:
             img = validated_data["img"]
             filename = img.name
@@ -32,6 +32,7 @@ class UserImgSerializer(ModelSerializer):
 
 
 class UserSerializer(ModelSerializer):
+    avatar = UserImgSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -81,6 +82,7 @@ class UserCreateSerializer(ModelSerializer):
         if password != confirm_password:
             raise ValidationError(
                 {"confirm_password": "Confirm password isn't correct!"})
+
         email = validated_data.pop("email")
         user = User.objects.create_user(
             email=email,
@@ -163,7 +165,7 @@ class UserCreateSerializer(ModelSerializer):
 
 
 class UserCustomTokenSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
+    def validate(self, attrs: dict) -> dict:
         data = super().validate(attrs)
         self.user.last_login = timezone.now()
         self.user.save(update_fields=["last_login"])

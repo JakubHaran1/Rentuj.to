@@ -30,39 +30,23 @@ function ImgGallery({
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [errorGallery, setErrorGallery] = useState("");
 
-  const setMainPhoto = useCallback(
-    (newImgArr: GalleryImage[]) => {
-      if (imgs.length > 0) {
-        const mainImg = imgs.shift();
-        if (!mainImg) {
-          setImgs((prev) => [...prev, ...newImgArr]);
-          return;
-        }
-        mainImg.isMain = true;
-        setImgs((prev) => [mainImg, ...prev, ...newImgArr]);
-      }
-      setImgs((prev) => {
-        return [...prev, ...newImgArr];
-      });
-    },
-    [imgs, setImgs],
-  );
-
   const onAddImg = useCallback(
     (files: File[]) => {
       const acceptedImg = files.map((file) => ({
-        id: crypto.randomUUID(),
+        pk: crypto.randomUUID(),
         file,
-        previewUrl: URL.createObjectURL(file),
-        isMain: false,
+        img: URL.createObjectURL(file),
+        is_main: false,
       }));
       if (imgs.length > MAX_PROPERTY_IMAGES) {
         setErrorGallery(`You can't select ${MAX_PROPERTY_IMAGES} photos`);
         return;
       }
-      setMainPhoto(acceptedImg);
+      setImgs((prev) => {
+        return [...prev, ...acceptedImg];
+      });
     },
-    [imgs, setMainPhoto],
+    [imgs, setImgs],
   );
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -82,18 +66,18 @@ function ImgGallery({
     }
 
     reordered.splice(newIndex, 0, movedImage);
-    setMainPhoto(reordered);
+    setImgs(reordered);
   };
 
   function handleCropSave(updatedImage: GalleryImage) {
     setCroppedImgs((previousCroppedImgs) => {
       const alreadyCropped = previousCroppedImgs.some(
-        (image) => image.id === updatedImage.id,
+        (image) => image.pk === updatedImage.pk,
       );
 
       if (alreadyCropped) {
         return previousCroppedImgs.map((image) =>
-          image.id === updatedImage.id ? updatedImage : image,
+          image.pk === updatedImage.pk ? updatedImage : image,
         );
       }
 
@@ -104,7 +88,7 @@ function ImgGallery({
   const displayedImgs = imgs.map(
     (originalImage) =>
       croppedImgs.find(
-        (croppedImage) => croppedImage.id === originalImage.id,
+        (croppedImage) => croppedImage.pk === originalImage.pk,
       ) ?? originalImage,
   );
 
@@ -125,9 +109,9 @@ function ImgGallery({
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         <DragDropProvider onDragEnd={onDragEnd}>
           {displayedImgs.map((image, index) => (
-            <DragItem key={image.id} id={image.id} index={index}>
+            <DragItem key={image.pk} id={image.pk} index={index}>
               <img
-                src={image.previewUrl}
+                src={image.img}
                 alt="Photo preview"
                 draggable={false}
                 className="h-full w-full object-cover rounded-2xl"
@@ -169,7 +153,7 @@ function ImgGallery({
       {isCropperOpen && imgs[0] ? (
         <ImgCropper
           images={imgs}
-          initialImageId={imgs[0].id}
+          initialImageId={imgs[0].pk}
           onClose={() => setIsCropperOpen(false)}
           onSave={handleCropSave}
         />

@@ -5,14 +5,14 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     PropertyViewSet,
-    PropertyDetailsViewSet,
+    ListingViewSet,
     PropertyImgViewSet,
     FiltersViewSet
 )
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'properties', PropertyViewSet)
-router.register(r'property-details', PropertyDetailsViewSet)
+router.register(r'listings', ListingViewSet)
 router.register(r'property-imgs', PropertyImgViewSet)
 router.register(r'filters', FiltersViewSet)
 

@@ -1,41 +1,5 @@
-import type { GalleryImage, GalleryImageResponse } from "./imgTypes";
+import type { GalleryImage } from "./imgTypes";
 import type { UserType } from "./userTypes";
-
-// Property types
-type PropertyType = {
-  title: string;
-  city: string;
-  street: string;
-  home_number: number;
-  floor_number: number;
-};
-
-type PropertyDetailType = {
-  pk: number;
-  owner: UserType;
-  description: string | null;
-  number_of_levels: number;
-  number_of_rooms: number;
-  square_meters: number;
-  price: number;
-  latitude: number | null;
-  longitude: number | null;
-  building_type: BuildingType;
-  date_active: string | null;
-  filters: RentalFilterResponseType[];
-  apartment_photos: GalleryImage[];
-};
-
-type PropertyDetailResponseType = Omit<PropertyDetailType, "apartment_photos"> & {
-  apartment_photos: GalleryImageResponse[];
-};
-
-type PropertyListingResponseType = Omit<
-  PropertyListingType,
-  "property_details"
-> & {
-  property_details: PropertyDetailResponseType;
-};
 
 type BuildingType =
   | "DETACHED"
@@ -46,32 +10,63 @@ type BuildingType =
   | "TENEMENT"
   | "ROOM_IN_SHARED_APARTMENT";
 
-type PropertyListingType = {
+type RentalFilterType = {
   pk: number;
+  name: string;
+};
+
+type RentalFilterAssignmentType = Pick<RentalFilterType, "pk"> & {
+  value: -1 | 0 | 1;
+};
+
+type RentalFilterResponseType = RentalFilterType & RentalFilterAssignmentType;
+
+type PropertyCoordinatesType = {
+  latitude: number | null;
+  longitude: number | null;
+};
+
+type PropertyFormType = {
   title: string;
   city: string;
   street: string;
   home_number: number;
   floor_number: number;
-  property_details: PropertyDetailType;
 };
 
-type CreatePropertyDataType = Omit<
-  PropertyDetailType,
-  "pk" | "owner" | "apartment_photos" | "filters"
-> & {
+type PropertyType = PropertyFormType &
+  PropertyCoordinatesType & {
+    pk: number;
+    number_of_levels: number;
+    number_of_rooms: number;
+    square_meters: number;
+    building_type: BuildingType;
+  };
+
+type PropertyListingType = {
+  pk: number;
   property: PropertyType;
-  filters: RentalFilterAssignmentType[];
+  description: string | null;
+  title: string;
+  is_active: boolean;
+  owner: UserType;
+  price: number;
+  date_active: string | null;
+  filters: RentalFilterResponseType[];
   apartment_photos: GalleryImage[];
 };
 
-type CreateFormStateType = Omit<
-  PropertyDetailType,
-  "pk" | "owner" | "latitude" | "longitude" | "filters" | "apartment_photos"
-> & {
-  property: PropertyType;
-  address: string;
+type CreateListingType = PropertyCoordinatesType & {
+  property: PropertyFormType;
+  description: string | null;
+  number_of_levels: number;
+  number_of_rooms: number;
+  square_meters: number;
+  price: number;
+  building_type: BuildingType;
+  date_active: string | null;
   filters: RentalFilterAssignmentType[];
+  apartment_photos: GalleryImage[];
 };
 
 type GeoApiResponseType = {
@@ -83,25 +78,6 @@ type GeoApiResponseType = {
   };
 };
 
-type ListingCoordinatesType = {
-  latitude: number | null;
-  longitude: number | null;
-};
-
-type RentalFiltersType = {
-  pk: number;
-  name: string;
-};
-
-type RentalFilterAssignmentType = {
-  id: number;
-  value: -1 | 0 | 1;
-};
-
-type RentalFilterResponseType = RentalFilterAssignmentType & {
-  name: string;
-};
-
 type MainFiltersStateType = {
   price: number;
   buildingType: BuildingType;
@@ -111,18 +87,14 @@ type MainFiltersStateType = {
 };
 
 export type {
-  PropertyType,
-  PropertyDetailType,
   BuildingType,
-  CreatePropertyDataType,
-  PropertyListingType,
-  CreateFormStateType,
+  CreateListingType,
   GeoApiResponseType,
-  ListingCoordinatesType,
-  RentalFiltersType,
+  PropertyCoordinatesType,
+  MainFiltersStateType,
+  PropertyFormType,
+  PropertyListingType,
   RentalFilterAssignmentType,
   RentalFilterResponseType,
-  MainFiltersStateType,
-  PropertyDetailResponseType,
-  PropertyListingResponseType,
+  RentalFilterType,
 };

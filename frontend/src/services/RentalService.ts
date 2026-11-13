@@ -1,70 +1,128 @@
 import { privateApi } from "../api/private";
 import { publicApi } from "../api/public";
-import type { GalleryImageResponse, GalleryImage } from "../types/imgTypes";
+import type { GalleryImage } from "../types/imgTypes";
 import type {
-  CreatePropertyDataType,
-  PropertyListingResponseType,
+  CreateListingType,
+  PropertyCoordinatesType,
   PropertyListingType,
-  RentalFiltersType,
+  RentalFilterType,
 } from "../types/propertyTypes";
 
-const toGalleryImage = (photo: GalleryImageResponse): GalleryImage => ({
-  id: String(photo.pk),
-  pk: photo.pk,
-  file: null,
-  previewUrl: photo.img,
-  isMain: photo.is_main,
-});
-
-const toPropertyListing = (
-  listing: PropertyListingResponseType,
-): PropertyListingType => ({
-  ...listing,
-  property_details: {
-    ...listing.property_details,
-    apartment_photos:
-      listing.property_details.apartment_photos.map(toGalleryImage),
-  },
-});
-
 export const RentalService = {
+  // Property helper functions
+  preparePropertyDataToSend(
+    data: CreateListingType,
+    imgs: GalleryImage[],
+    croppedImgs: GalleryImage[],
+    coordinates: PropertyCoordinatesType,
+  ): CreateListingType {
+    // Prepare apartment photos by replacing original images with cropped ones if available and marking the first image as main.
+    const apartmentPhotos = imgs
+      .map(
+        (image) =>
+          croppedImgs.find((croppedImage) => croppedImage.pk === image.pk) ??
+          image,
+      )
+      .filter((image) => image.file && image.file.size > 0)
+      .map((image, index) => ({ ...image, is_main: index === 0 }));
+
+    const dataToSend = {
+      ...data,
+      date_active: data.date_active || null,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      apartment_photos: apartmentPhotos,
+    };
+    return dataToSend;
+  },
+
+  toFormState(listing: PropertyListingType): CreateListingType {
+    const { property, ...details } = listing;
+
+    return {
+      property: {
+        title: property.title,
+        city: property.city,
+        street: property.street,
+        home_number: property.home_number,
+        floor_number: property.floor_number,
+      },
+      latitude: property.latitude,
+      longitude: property.longitude,
+      apartment_photos: details.apartment_photos,
+      description: details.description,
+      number_of_levels: property.number_of_levels,
+      number_of_rooms: property.number_of_rooms,
+      square_meters: property.square_meters,
+      price: details.price,
+      building_type: property.building_type,
+      date_active: details.date_active,
+      filters: details.filters.map(({ pk, value }) => ({ pk, value })),
+    };
+  },
+
+  // Properties related methods
   async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
-    const resp = await publicApi.get<PropertyListingResponseType[]>(
-      "rentals/properties",
+    const resp = await publicApi.get<PropertyListingType[]>(
+      "rentals/listings",
       {
         params: {
-          property_details__owner_id: query_param,
+          owner_id: query_param || undefined,
         },
       },
     );
-    return resp.data.map(toPropertyListing);
+    return resp.data;
   },
 
   async deleteProperty(id: number): Promise<void> {
-    await privateApi.delete(`rentals/properties/${id}`);
+    await privateApi.delete(`rentals/listings/${id}`);
   },
 
-  async createPropertyItem(data: CreatePropertyDataType) {
-    const { property, apartment_photos, ...propertyDetails } = data;
+  async createPropertyItem(data: CreateListingType) {
+    const {
+      property,
+      apartment_photos,
+      number_of_levels,
+      number_of_rooms,
+      square_meters,
+      building_type,
+      latitude,
+      longitude,
+      description,
+      price,
+      date_active,
+      filters,
+    } = data;
 
-    const resp = await privateApi.post<{
-      property_details: { pk: number };
-    }>("rentals/properties", {
-      ...property,
-      property_details: propertyDetails,
-    });
+    const resp = await privateApi.post<PropertyListingType>(
+      "rentals/listings",
+      {
+        description,
+        price,
+        date_active,
+        filters,
+        property: {
+          ...property,
+          number_of_levels,
+          number_of_rooms,
+          square_meters,
+          building_type,
+          latitude,
+          longitude,
+        },
+      },
+    );
 
     await Promise.all(
       apartment_photos.map((photo) => {
-        if (!photo.file) return Promise.resolve();
+        if (typeof photo.pk === "number" || !photo.file) {
+          return Promise.resolve();
+        }
 
         const formData = new FormData();
-        formData.append(
-          "property_details",
-          String(resp.data.property_details.pk),
-        );
+        formData.append("listing", String(resp.data.pk));
         formData.append("img", photo.file);
-        formData.append("is_main", String(photo.isMain));
+        formData.append("is_main", String(photo.is_main));
 
         return privateApi.post("rentals/property-imgs", formData);
       }),
@@ -72,23 +130,27 @@ export const RentalService = {
     return resp;
   },
 
-  async getPropertyFilters(): Promise<RentalFiltersType[]> {
-    const resp = await publicApi.get<RentalFiltersType[]>("rentals/filters");
+  // Filters related methods
+  async getPropertyFilters(): Promise<RentalFilterType[]> {
+    const resp = await publicApi.get<RentalFilterType[]>("rentals/filters");
     return resp.data;
   },
+
   async getPropertyDetail(pk: string): Promise<PropertyListingType> {
-    const resp = await publicApi.get<PropertyListingResponseType>(
-      `rentals/properties/${pk}`,
+    const resp = await publicApi.get<PropertyListingType>(
+      `rentals/listings/${pk}`,
       {},
     );
-    return toPropertyListing(resp.data);
+    return resp.data;
   },
+
+  // Favourite related methods
   getFavourite(): PropertyListingType[] {
     const fav = localStorage.getItem("rentals_fav");
     return fav ? JSON.parse(fav) : [];
   },
 
-  getFavouriteIds(): number[] {
+  getFavouriteIdList(): number[] {
     const fav = localStorage.getItem("rentals_pks");
     return fav ? JSON.parse(fav) : [];
   },
