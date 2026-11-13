@@ -1,11 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { PropertyListingType } from "../../types/propertyTypes";
+import type { ListingDefaultType } from "../../types/propertyTypes";
 import Button from "../common/Button";
 
 type ConfirmDeletePopUpProps = {
-  setListingToDelete: Dispatch<SetStateAction<PropertyListingType | null>>;
-  listingToDelete: PropertyListingType | null;
-  onDelete?: (listing: PropertyListingType) => void;
+  setListingToDelete: Dispatch<SetStateAction<ListingDefaultType | null>>;
+  listingToDelete: ListingDefaultType | null;
+  onDelete?: (listing: ListingDefaultType) => void;
 };
 
 function ConfirmDeletePopUp({

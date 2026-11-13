@@ -1,9 +1,12 @@
+from urllib.request import Request
+from rest_framework.response import Response
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.decorators import api_view
 
 from .models import Listing, Property, PropertyImg, PropertyFilterName
 from .serializers import (
@@ -15,6 +18,15 @@ class PropertyViewSet(ReadOnlyModelViewSet):
     queryset = Property.objects.filter(listings__is_active=True)
     serializer_class = PropertySerializer
     permission_classes = [AllowAny]
+
+
+@api_view(["GET"])
+def get_listings_for_property(request: Request, property_id):
+
+    listing_arr = Listing.objects.filter(property_id=property_id)
+
+    serializer = ListingSerializer(listing_arr, many=True)
+    return Response(serializer.data)
 
 
 class ListingViewSet(ModelViewSet):
@@ -49,10 +61,12 @@ class ListingViewSet(ModelViewSet):
 
     @transaction.atomic
     def perform_destroy(self, instance: Listing):
+
         if instance.owner_id != self.request.user.pk:
             raise PermissionDenied("You can delete only your own listings.")
         property_obj = Property.objects.select_for_update().get(pk=instance.property_id)
         instance.refresh_from_db()
+
         if instance.is_active:
             if property_obj.listings.exclude(pk=instance.pk).exists():
                 raise ValidationError(

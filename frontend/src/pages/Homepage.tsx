@@ -9,7 +9,7 @@ function HomePage() {
   // const [properties, setProperties] = useState<PropertyDetailType[]>([]);
   // useEffect(() => {
   //   async function getProperties() {
-  //     const propList = await PropertiesService.getPropertiesList();
+  //     const propList = await PropertiesService.getListingsList();
   //     console.log(propList);
   //     setProperties(propList);
   //   }

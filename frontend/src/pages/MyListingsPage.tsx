@@ -1,4 +1,4 @@
-import type { PropertyListingType } from "../types/propertyTypes";
+import type { ListingDefaultType } from "../types/propertyTypes";
 import PropertyBoxes from "../components/rentals/PropertyBoxes";
 import { useEffect, useState } from "react";
 import { RentalService } from "../services/RentalService";
@@ -8,14 +8,14 @@ import { handleDrfGetError } from "../services/helpers";
 import ErrorMessage from "../components/common/ErrorMessage";
 
 function MyListingPage() {
-  const [properties, setProperties] = useState<PropertyListingType[]>([]);
+  const [properties, setProperties] = useState<ListingDefaultType[]>([]);
   const [getError, setGetError] = useState<string>("");
 
   const { user } = useUserContext();
 
-  const deleteListing = async (listing: PropertyListingType) => {
+  const deleteListing = async (listing: ListingDefaultType) => {
     try {
-      await RentalService.deleteProperty(listing.pk);
+      await RentalService.deleteListing(listing.pk);
       setProperties((current) =>
         current.filter((property) => property.pk !== listing.pk),
       );
@@ -27,7 +27,7 @@ function MyListingPage() {
   useEffect(() => {
     async function getProperties() {
       try {
-        const propList = await RentalService.getPropertiesList(user?.pk);
+        const propList = await RentalService.getListingsList(user?.pk);
         setProperties(propList);
       } catch (error: unknown) {
         handleDrfGetError(error, setGetError);
@@ -38,7 +38,7 @@ function MyListingPage() {
 
   return (
     <main className="w-full px-4 py-10 sm:px-6 lg:px-8">
-      <section className="rounded-2xl border border-[#c2c9d2] bg-[#e9edf2] p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+      <section className="rounded-2xl border border-[#c2c9d2] bg-[#e9edf2] p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:py-6 sm:p-8">
         {properties.length == 0 ? (
           <div>
             <h1 className="text-3xl font-semibold text-[#16324f] dark:text-white">
@@ -66,6 +66,9 @@ function MyListingPage() {
             <p className="mt-2 text-sm text-[#6b7280] dark:text-slate-300">
               This is a place where you can add, edit or delete your rentals
             </p>
+            <Button className="my-3" to="/my-properties" variant="secondary">
+              Show my properties
+            </Button>
           </div>
         )}
       </section>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type {
-  CreateListingType,
-  MainFiltersStateType,
+  ListingCreateType,
+  MainFiltersType,
   RentalFilterResponseType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
@@ -20,11 +20,11 @@ function RentalFilters({
 }: MainFiltersPropsType) {
   const maxPrice = 20000;
 
-  const { getValues, setValue, watch } = useFormContext<CreateListingType>();
+  const { getValues, setValue, watch } = useFormContext<ListingCreateType>();
 
   const selectedRentalFilters = watch("filters");
 
-  const [mainFilters, setMainFilters] = useState<MainFiltersStateType>({
+  const [mainFilters, setMainFilters] = useState<MainFiltersType>({
     price: 250,
     buildingType: "APARTMENT_BUILDING",
     numberOfLevels: 0,
@@ -37,9 +37,9 @@ function RentalFilters({
     RentalFilterResponseType[]
   >([]);
 
-  const onMainFilterChange = <K extends keyof MainFiltersStateType>(
+  const onMainFilterChange = <K extends keyof MainFiltersType>(
     key: K,
-    value: MainFiltersStateType[K],
+    value: MainFiltersType[K],
   ) => {
     setMainFilters((previous) => ({ ...previous, [key]: value }));
   };
@@ -133,8 +133,7 @@ function RentalFilters({
                   onChange={(event) =>
                     onMainFilterChange(
                       "buildingType",
-                      event.target
-                        .value as MainFiltersStateType["buildingType"],
+                      event.target.value as MainFiltersType["buildingType"],
                     )
                   }
                 />

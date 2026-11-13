@@ -6,22 +6,22 @@ import { handleDrfGetError } from "../services/helpers";
 import ErrorMessage from "../components/common/ErrorMessage";
 import Map from "../components/common/Map";
 
-import type { PropertyListingType } from "../types/propertyTypes";
+import type { ListingDefaultType } from "../types/propertyTypes";
 import Button from "../components/common/Button";
 
 function RentalsDetailPage() {
   const { pk } = useParams();
   const [rentalError, setRentalError] = useState("");
 
-  const [rentalOffert, setRentalOffert] = useState<PropertyListingType | null>(
+  const [rentalOffert, setRentalOffert] = useState<ListingDefaultType | null>(
     null,
   );
   const [isSaved, setIsSaved] = useState<boolean>(false);
   useEffect(() => {
-    async function handleGetPropertyDetail() {
+    async function handlegetListingDetail() {
       try {
         if (!pk) throw new AxiosError("No rental identifier");
-        const resp = await RentalService.getPropertyDetail(pk);
+        const resp = await RentalService.getListingDetail(pk);
 
         setRentalOffert(resp);
         setIsSaved(RentalService.getFavouriteIdList().includes(Number(pk)));
@@ -29,7 +29,7 @@ function RentalsDetailPage() {
         handleDrfGetError(error, setRentalError);
       }
     }
-    handleGetPropertyDetail();
+    handlegetListingDetail();
   }, [pk]);
 
   const details = rentalOffert;
@@ -37,11 +37,10 @@ function RentalsDetailPage() {
 
   const handleSaveBtn = (
     event: React.MouseEvent<HTMLButtonElement>,
-    rentalOffert: PropertyListingType,
+    rentalOffert: ListingDefaultType,
   ) => {
     event.preventDefault();
     RentalService.saveFavourite(rentalOffert);
-    console.log(RentalService.getFavouriteIdList().includes(rentalOffert.pk));
     setIsSaved(RentalService.getFavouriteIdList().includes(rentalOffert.pk));
   };
   return (
@@ -101,7 +100,8 @@ function RentalsDetailPage() {
             </button>
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-gray-500">
-                {rentalOffert.property.street} {rentalOffert.property.home_number},{" "}
+                {rentalOffert.property.street}{" "}
+                {rentalOffert.property.home_number},{" "}
                 {rentalOffert.property.city}
               </span>
             </div>

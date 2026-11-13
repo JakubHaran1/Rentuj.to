@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import type { GalleryImage } from "../types/imgTypes";
 import type {
-  CreateListingType,
+  ListingCreateType,
   PropertyCoordinatesType,
 } from "../types/propertyTypes";
 
@@ -13,18 +13,13 @@ function CreateListing() {
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
   const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);
 
-  const formCreate = useForm<CreateListingType>({
+  const formCreate = useForm<ListingCreateType>({
     defaultValues: {
+      title: "",
       description: "",
-      number_of_levels: 0,
-      number_of_rooms: 0,
-      square_meters: 0,
       price: 0,
-      building_type: "APARTMENT_BUILDING",
       date_active: "",
       filters: [],
-      latitude: null,
-      longitude: null,
       apartment_photos: [],
       property: {
         title: "",
@@ -32,24 +27,30 @@ function CreateListing() {
         street: "",
         home_number: 0,
         floor_number: 0,
+        number_of_levels: 0,
+        number_of_rooms: 0,
+        square_meters: 0,
+        building_type: "APARTMENT_BUILDING",
+        latitude: null,
+        longitude: null,
       },
     },
   });
 
   const onSubmitForm = async (
-    data: CreateListingType,
+    data: ListingCreateType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
     coordinates: PropertyCoordinatesType,
   ) => {
-    const dataToSend = RentalService.preparePropertyDataToSend(
+    const dataToSend = RentalService.prepareListingDataToSend(
       data,
       imgs,
       croppedImgs,
       coordinates,
     );
 
-    await RentalService.createPropertyItem(dataToSend);
+    await RentalService.createListingItem(dataToSend);
     setImgs([]);
     setCroppedImgs([]);
   };
@@ -72,6 +73,7 @@ function CreateListing() {
             croppedImgs={croppedImgs}
             setCroppedImgs={setCroppedImgs}
             onSubmitForm={onSubmitForm}
+            mode="create"
           />
         </FormProvider>
       </section>

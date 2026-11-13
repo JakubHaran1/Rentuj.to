@@ -1,10 +1,10 @@
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { PropertyListingType } from "../../types/propertyTypes";
+import type { ListingDefaultType } from "../../types/propertyTypes";
 
 export type PropertyContextType = {
-  properties: PropertyListingType[];
-  setProperties: Dispatch<SetStateAction<PropertyListingType[]>>;
+  properties: ListingDefaultType[];
+  setProperties: Dispatch<SetStateAction<ListingDefaultType[]>>;
 };
 
 export const PropertyContext = createContext<PropertyContextType | undefined>(

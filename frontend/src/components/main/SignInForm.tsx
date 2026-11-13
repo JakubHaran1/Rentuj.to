@@ -12,7 +12,7 @@ type SignInFormProps = {
   isOpen: boolean;
   onToggle: () => void;
   onSuccess: () => void;
-  listingLoginPrompt: boolean;
+  loginPrompt: "listing" | "property" | null;
 };
 
 type RemindPasswordType = {
@@ -23,7 +23,7 @@ function SignInForm({
   isOpen,
   onToggle,
   onSuccess,
-  listingLoginPrompt,
+  loginPrompt,
 }: SignInFormProps) {
   const { setUser } = useUserContext();
   const [formType, setFormType] = useState(true);
@@ -115,9 +115,10 @@ function SignInForm({
           <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
             Sign in to manage your rentals.
           </p>
-          {listingLoginPrompt && (
+          {loginPrompt && (
             <p className="mt-3 text-sm font-medium text-[#16324f] dark:text-slate-200">
-              To add a listing, you need to be logged in.
+              To add {loginPrompt === "listing" ? "a listing" : "a property"},
+              you need to be logged in.
             </p>
           )}
           <Input

@@ -59,6 +59,9 @@ function AccountMenu({ openMenu, setOpenMenu }: AccountMenuProps) {
         <Link className="account-menu__link" to="/profile/edit">
           My account
         </Link>
+        <Link className="account-menu__link" to="/my-properties">
+          My properties
+        </Link>
         <a className="account-menu__link" href="#write-review">
           Write a review
         </a>

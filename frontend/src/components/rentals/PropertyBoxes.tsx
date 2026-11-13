@@ -1,13 +1,13 @@
 import { useState } from "react";
-import type { PropertyListingType } from "../../types/propertyTypes";
+import type { ListingDefaultType } from "../../types/propertyTypes";
 import Button from "../common/Button";
 import ConfirmDeletePopUp from "./ConfirmDeletePopUp";
 import { useNavigate } from "react-router-dom";
 type PropertyBoxesProps = {
   boxType: string;
-  boxData: PropertyListingType[];
+  boxData: ListingDefaultType[];
   editable?: boolean;
-  onDelete?: (listing: PropertyListingType) => void;
+  onDelete?: (listing: ListingDefaultType) => void;
 };
 
 function PropertyBoxes({
@@ -17,7 +17,7 @@ function PropertyBoxes({
   onDelete,
 }: PropertyBoxesProps) {
   const [listingToDelete, setListingToDelete] =
-    useState<PropertyListingType | null>(null);
+    useState<ListingDefaultType | null>(null);
   const navigate = useNavigate();
   return (
     <>
@@ -69,7 +69,7 @@ function PropertyBoxes({
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/listing-edit/${listing.pk}`);
+                              navigate(`/rental-edit/${listing.pk}`);
                             }}
                             aria-label={`Edit ${listing.title}`}
                             className="!p-2"

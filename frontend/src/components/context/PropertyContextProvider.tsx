@@ -1,10 +1,10 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { PropertyContext } from "./PropertyContext";
-import type { PropertyListingType } from "../../types/propertyTypes";
+import type { ListingDefaultType } from "../../types/propertyTypes";
 
 export function PropertyProvider({ children }: { children: ReactNode }) {
-  const [properties, setProperties] = useState<PropertyListingType[]>([]);
+  const [properties, setProperties] = useState<ListingDefaultType[]>([]);
 
   return (
     <PropertyContext.Provider value={{ properties, setProperties }}>

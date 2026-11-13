@@ -5,6 +5,8 @@ import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import UpdateUserPage from "./pages/UpdateUserPage";
 import CreateListing from "./pages/CreateListingPage";
+import CreatePropertyPage from "./pages/CreatePropertyPage";
+import MyPropertiesPage from "./pages/MyPropertiesPage";
 import MyListingPage from "./pages/MyListingsPage";
 import RentalsDetailPage from "./pages/RentalsDetailPage";
 
@@ -16,6 +18,7 @@ import RecentlyViewed from "./components/main/RecentlyViewed";
 import Fotter from "./components/main/Footer";
 
 import RequireAuth from "./components/common/RequireAuth";
+import EditRentalPage from "./pages/EditRentalPage";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(
@@ -47,7 +50,10 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/profile/edit" element={<UpdateUserPage />} />
             <Route path="/listing-create" element={<CreateListing />} />
+            <Route path="/property-create" element={<CreatePropertyPage />} />
+            <Route path="/my-properties" element={<MyPropertiesPage />} />
             <Route path="/my-listings" element={<MyListingPage />} />
+            <Route path="/rental-edit/:pk" element={<EditRentalPage />} />
           </Route>
         </Routes>
 

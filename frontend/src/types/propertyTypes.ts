@@ -26,24 +26,23 @@ type PropertyCoordinatesType = {
   longitude: number | null;
 };
 
-type PropertyFormType = {
+type PropertyDefaultType = PropertyCoordinatesType & {
   title: string;
   city: string;
   street: string;
   home_number: number;
   floor_number: number;
+  number_of_levels: number;
+  number_of_rooms: number;
+  square_meters: number;
+  building_type: BuildingType;
 };
 
-type PropertyType = PropertyFormType &
-  PropertyCoordinatesType & {
-    pk: number;
-    number_of_levels: number;
-    number_of_rooms: number;
-    square_meters: number;
-    building_type: BuildingType;
-  };
+type PropertyType = PropertyDefaultType & {
+  pk: number;
+};
 
-type PropertyListingType = {
+type ListingDefaultType = {
   pk: number;
   property: PropertyType;
   description: string | null;
@@ -56,14 +55,11 @@ type PropertyListingType = {
   apartment_photos: GalleryImage[];
 };
 
-type CreateListingType = PropertyCoordinatesType & {
-  property: PropertyFormType;
+type ListingCreateType = {
+  property: PropertyDefaultType;
+  title: string;
   description: string | null;
-  number_of_levels: number;
-  number_of_rooms: number;
-  square_meters: number;
   price: number;
-  building_type: BuildingType;
   date_active: string | null;
   filters: RentalFilterAssignmentType[];
   apartment_photos: GalleryImage[];
@@ -78,7 +74,7 @@ type GeoApiResponseType = {
   };
 };
 
-type MainFiltersStateType = {
+type MainFiltersType = {
   price: number;
   buildingType: BuildingType;
   numberOfLevels: number;
@@ -88,12 +84,12 @@ type MainFiltersStateType = {
 
 export type {
   BuildingType,
-  CreateListingType,
+  ListingCreateType,
   GeoApiResponseType,
   PropertyCoordinatesType,
-  MainFiltersStateType,
-  PropertyFormType,
-  PropertyListingType,
+  MainFiltersType,
+  ListingDefaultType,
+  PropertyType,
   RentalFilterAssignmentType,
   RentalFilterResponseType,
   RentalFilterType,

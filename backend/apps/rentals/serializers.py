@@ -118,7 +118,10 @@ class ListingSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Customize the representation of a listing instance."""
         data = super().to_representation(instance)
-        data["title"] = instance.title or instance.property.title
+        title = instance.title
+        if instance.property.listings.count() > 1:
+            title = f'{instance.title} ({instance.property.listings.count()})'
+        data["title"] = title or instance.property.title
         return data
 
     def validate(self, attrs):

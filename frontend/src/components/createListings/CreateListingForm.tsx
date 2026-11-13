@@ -8,7 +8,7 @@ import {
   type SetStateAction,
 } from "react";
 import type {
-  CreateListingType,
+  ListingCreateType,
   GeoApiResponseType,
   PropertyCoordinatesType,
 } from "../../types/propertyTypes";
@@ -22,13 +22,14 @@ import type { GalleryImage } from "../../types/imgTypes";
 import RentalFilters from "./RentalFilters";
 
 type CreateListingFormProps = {
-  initialData?: CreateListingType;
   imgs: GalleryImage[];
   setImgs: Dispatch<SetStateAction<GalleryImage[]>>;
   croppedImgs: GalleryImage[];
   setCroppedImgs: Dispatch<SetStateAction<GalleryImage[]>>;
+  mode: "create" | "edit";
+
   onSubmitForm: (
-    data: CreateListingType,
+    data: ListingCreateType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
     coordinates: PropertyCoordinatesType,
@@ -36,14 +37,14 @@ type CreateListingFormProps = {
 };
 
 function CreateListingForm({
-  initialData,
   imgs,
   setImgs,
   croppedImgs,
   setCroppedImgs,
   onSubmitForm,
+  mode = "create",
 }: CreateListingFormProps) {
-  const formCreate = useFormContext<CreateListingType>();
+  const formCreate = useFormContext<ListingCreateType>();
   const [fieldState, setFieldState] = useState("");
   const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
 
@@ -57,12 +58,6 @@ function CreateListingForm({
   });
   const price = formCreate.watch("price");
   const maxPrice = 20000;
-
-  useEffect(() => {
-    if (initialData) {
-      formCreate.reset(initialData);
-    }
-  }, [formCreate, initialData]);
 
   const onAddressChange = async (
     e: ChangeEvent<HTMLInputElement>,
@@ -218,15 +213,29 @@ function CreateListingForm({
       </fieldset>
       <fieldset>
         <legend className="text-xl font-semibold text-[#16324f] dark:text-white">
-          Property details
+          Listing details
         </legend>
         <div className="grid gap-x-5 md:grid-cols-2">
+          <div className="col-span-2">
+            <Input
+              label="Listing title"
+              type="string"
+              min={0}
+              error={formCreate.formState.errors.title?.message}
+              {...formCreate.register("title")}
+            />
+            <span className="text-xs italic text-[#16324f] dark:text-white">
+              Only you will see this title
+            </span>
+          </div>
           <Input
             label="Number of levels"
             type="number"
             min={0}
-            error={formCreate.formState.errors.number_of_levels?.message}
-            {...formCreate.register("number_of_levels", {
+            error={
+              formCreate.formState.errors.property?.number_of_levels?.message
+            }
+            {...formCreate.register("property.number_of_levels", {
               required: "Number of levels field is required",
             })}
           />
@@ -234,8 +243,10 @@ function CreateListingForm({
             label="Number of rooms"
             type="number"
             min={1}
-            error={formCreate.formState.errors.number_of_rooms?.message}
-            {...formCreate.register("number_of_rooms", {
+            error={
+              formCreate.formState.errors.property?.number_of_rooms?.message
+            }
+            {...formCreate.register("property.number_of_rooms", {
               required: "Number of rooms field is required",
             })}
           />
@@ -290,15 +301,17 @@ function CreateListingForm({
             type="number"
             min={0}
             step="0.01"
-            error={formCreate.formState.errors.square_meters?.message}
-            {...formCreate.register("square_meters", {
+            error={formCreate.formState.errors.property?.square_meters?.message}
+            {...formCreate.register("property.square_meters", {
               required: "Square meters field is required",
             })}
           />
           <div className="mt-4">
             <BuildingType
-              error={formCreate.formState.errors.building_type?.message}
-              {...formCreate.register("building_type", {
+              error={
+                formCreate.formState.errors.property?.building_type?.message
+              }
+              {...formCreate.register("property.building_type", {
                 required: "Building type field is required",
               })}
             />
@@ -339,15 +352,18 @@ function CreateListingForm({
           </label>
         </div>
       </fieldset>
-      <RentalFilters />
+      <RentalFilters mode="set" />
       <ImgGallery
         imgs={imgs}
         setImgs={setImgs}
         croppedImgs={croppedImgs}
         setCroppedImgs={setCroppedImgs}
       />
-
-      <Button type="submit">Create listing</Button>
+      {mode === "create" ? (
+        <Button type="submit">Create listing</Button>
+      ) : (
+        <Button type="submit">Update listing</Button>
+      )}
     </form>
   );
 }

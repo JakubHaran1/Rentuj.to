@@ -16,7 +16,9 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
   const [openMenu, setOpenMenu] = useState<
     "signin" | "signup" | "account" | null
   >(null);
-  const [showListingLoginPrompt, setShowListingLoginPrompt] = useState(false);
+  const [loginPrompt, setLoginPrompt] = useState<"listing" | "property" | null>(
+    null,
+  );
 
   return (
     <header className="border-b border-[#c2c9d2] bg-[#e9edf2] dark:border-slate-800 dark:bg-slate-900">
@@ -85,11 +87,38 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
           <button
             aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
             aria-pressed={isDarkMode}
-            className="rounded-lg border border-[#c2c9d2] px-3 py-2 text-sm font-medium text-[#16324f] transition hover:bg-[#dfe3e9] dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
+            className="rounded-lg border border-[#c2c9d2] p-2.5 text-[#16324f] transition hover:bg-[#dfe3e9] dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
             onClick={() => setIsDarkMode((current) => !current)}
             type="button"
           >
-            {isDarkMode ? "Light mode" : "Dark mode"}
+            {isDarkMode ? (
+              <svg
+                aria-hidden="true"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+              </svg>
+            ) : (
+              <svg
+                aria-hidden="true"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <path d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.5 8.5 0 1 0 20.2 15.3Z" />
+              </svg>
+            )}
           </button>
           {user ? (
             <Button to="/listing-create" variant="primary">
@@ -99,7 +128,7 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             <Button
               onClick={() => {
                 const shouldOpenSignIn = openMenu !== "signin";
-                setShowListingLoginPrompt(shouldOpenSignIn);
+                setLoginPrompt(shouldOpenSignIn ? "listing" : null);
                 setOpenMenu(shouldOpenSignIn ? "signin" : null);
               }}
               type="button"
@@ -109,27 +138,44 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             </Button>
           )}
           {user ? (
+            <Button to="/property-create" variant="secondary">
+              Add property
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                const shouldOpenSignIn = openMenu !== "signin";
+                setLoginPrompt(shouldOpenSignIn ? "property" : null);
+                setOpenMenu(shouldOpenSignIn ? "signin" : null);
+              }}
+              type="button"
+              variant="secondary"
+            >
+              Add property
+            </Button>
+          )}
+          {user ? (
             <AccountMenu openMenu={openMenu} setOpenMenu={setOpenMenu} />
           ) : (
             <>
               <SignInForm
                 isOpen={openMenu === "signin"}
                 onToggle={() => {
-                  setShowListingLoginPrompt(false);
+                  setLoginPrompt(null);
                   setOpenMenu((current) =>
                     current === "signin" ? null : "signin",
                   );
                 }}
                 onSuccess={() => {
                   setOpenMenu(null);
-                  setShowListingLoginPrompt(false);
+                  setLoginPrompt(null);
                 }}
-                listingLoginPrompt={showListingLoginPrompt}
+                loginPrompt={loginPrompt}
               />
               <SignUpForm
                 isOpen={openMenu === "signup"}
                 onToggle={() => {
-                  setShowListingLoginPrompt(false);
+                  setLoginPrompt(null);
                   setOpenMenu((current) =>
                     current === "signup" ? null : "signup",
                   );

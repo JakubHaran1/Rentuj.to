@@ -2,20 +2,20 @@ import { privateApi } from "../api/private";
 import { publicApi } from "../api/public";
 import type { GalleryImage } from "../types/imgTypes";
 import type {
-  CreateListingType,
+  ListingCreateType,
   PropertyCoordinatesType,
-  PropertyListingType,
+  ListingDefaultType,
   RentalFilterType,
 } from "../types/propertyTypes";
 
 export const RentalService = {
-  // Property helper functions
-  preparePropertyDataToSend(
-    data: CreateListingType,
+  // Listing helper functions
+  prepareListingDataToSend(
+    data: ListingCreateType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
     coordinates: PropertyCoordinatesType,
-  ): CreateListingType {
+  ): ListingCreateType {
     // Prepare apartment photos by replacing original images with cropped ones if available and marking the first image as main.
     const apartmentPhotos = imgs
       .map(
@@ -29,14 +29,16 @@ export const RentalService = {
     const dataToSend = {
       ...data,
       date_active: data.date_active || null,
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
+      property: {
+        ...data.property,
+        ...coordinates,
+      },
       apartment_photos: apartmentPhotos,
     };
     return dataToSend;
   },
 
-  toFormState(listing: PropertyListingType): CreateListingType {
+  toListingFormState(listing: ListingDefaultType): ListingCreateType {
     const { property, ...details } = listing;
 
     return {
@@ -46,71 +48,38 @@ export const RentalService = {
         street: property.street,
         home_number: property.home_number,
         floor_number: property.floor_number,
+        number_of_levels: property.number_of_levels,
+        number_of_rooms: property.number_of_rooms,
+        square_meters: property.square_meters,
+        building_type: property.building_type,
+        latitude: property.latitude,
+        longitude: property.longitude,
       },
-      latitude: property.latitude,
-      longitude: property.longitude,
+      title: details.title,
       apartment_photos: details.apartment_photos,
       description: details.description,
-      number_of_levels: property.number_of_levels,
-      number_of_rooms: property.number_of_rooms,
-      square_meters: property.square_meters,
       price: details.price,
-      building_type: property.building_type,
       date_active: details.date_active,
       filters: details.filters.map(({ pk, value }) => ({ pk, value })),
     };
   },
 
-  // Properties related methods
-  async getPropertiesList(query_param = ""): Promise<PropertyListingType[]> {
-    const resp = await publicApi.get<PropertyListingType[]>(
-      "rentals/listings",
-      {
-        params: {
-          owner_id: query_param || undefined,
-        },
+  // Listing related methods
+  async getListingsList(query_param = ""): Promise<ListingDefaultType[]> {
+    const resp = await publicApi.get<ListingDefaultType[]>("rentals/listings", {
+      params: {
+        owner_id: query_param || undefined,
       },
-    );
+    });
     return resp.data;
   },
 
-  async deleteProperty(id: number): Promise<void> {
-    await privateApi.delete(`rentals/listings/${id}`);
-  },
+  async createListingItem(data: ListingCreateType) {
+    const { apartment_photos, ...payload } = data;
 
-  async createPropertyItem(data: CreateListingType) {
-    const {
-      property,
-      apartment_photos,
-      number_of_levels,
-      number_of_rooms,
-      square_meters,
-      building_type,
-      latitude,
-      longitude,
-      description,
-      price,
-      date_active,
-      filters,
-    } = data;
-
-    const resp = await privateApi.post<PropertyListingType>(
+    const resp = await privateApi.post<ListingDefaultType>(
       "rentals/listings",
-      {
-        description,
-        price,
-        date_active,
-        filters,
-        property: {
-          ...property,
-          number_of_levels,
-          number_of_rooms,
-          square_meters,
-          building_type,
-          latitude,
-          longitude,
-        },
-      },
+      payload,
     );
 
     await Promise.all(
@@ -130,22 +99,48 @@ export const RentalService = {
     return resp;
   },
 
+  // async updateListing(id: number, data: ListingCreateType) {
+  //   const { apartment_photos, ...payload } = data;
+  //   const resp = await privateApi.put<ListingDefaultType>(
+  //     "rentals/listings",
+  //     payload,
+  //   );
+
+  //   await Promise.all(
+  //     apartment_photos.map((photo) => {
+  //       if (typeof photo.pk === "number" || !photo.file) {
+  //         return Promise.resolve();
+  //       }
+
+  //       const formData = new FormData();
+  //       formData.append("listing", String(resp.data.pk));
+  //       formData.append("img", photo.file);
+  //       formData.append("is_main", String(photo.is_main));
+
+  //       return privateApi.post("rentals/property-imgs", formData);
+  //     }),
+  //   );
+  //   return resp;
+  // },
+
+  async deleteListing(id: number): Promise<void> {
+    await privateApi.delete(`rentals/listings/${id}`);
+  },
   // Filters related methods
   async getPropertyFilters(): Promise<RentalFilterType[]> {
     const resp = await publicApi.get<RentalFilterType[]>("rentals/filters");
     return resp.data;
   },
 
-  async getPropertyDetail(pk: string): Promise<PropertyListingType> {
-    const resp = await publicApi.get<PropertyListingType>(
+  async getListingDetail(pk: string): Promise<ListingDefaultType> {
+    const resp = await publicApi.get<ListingDefaultType>(
       `rentals/listings/${pk}`,
-      {},
     );
     return resp.data;
   },
 
   // Favourite related methods
-  getFavourite(): PropertyListingType[] {
+  getFavourite(): ListingDefaultType[] {
     const fav = localStorage.getItem("rentals_fav");
     return fav ? JSON.parse(fav) : [];
   },
@@ -155,7 +150,7 @@ export const RentalService = {
     return fav ? JSON.parse(fav) : [];
   },
 
-  saveFavourite(data: PropertyListingType) {
+  saveFavourite(data: ListingDefaultType) {
     const fav = this.getFavourite();
 
     let fav_set;

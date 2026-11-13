@@ -5,54 +5,75 @@ import { useParams } from "react-router-dom";
 import { RentalService } from "../services/RentalService";
 import { useEffect, useState } from "react";
 import type {
-  CreateListingType,
+  ListingCreateType,
   PropertyCoordinatesType,
-  PropertyListingType,
 } from "../types/propertyTypes";
 import { handleDrfGetError } from "../services/helpers";
 
 import ErrorMessage from "../components/common/ErrorMessage";
 import type { GalleryImage } from "../types/imgTypes";
+import { FormProvider, useForm } from "react-hook-form";
 
-function EditListingPage() {
+function EditRentalPage() {
   const { pk } = useParams();
   const [rentalError, setRentalError] = useState("");
 
-  const [rentalOffert, setRentalOffert] = useState<PropertyListingType | null>(
-    null,
-  );
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
   const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);
 
+  const formCreate = useForm<ListingCreateType>({
+    defaultValues: {
+      title: "",
+      description: "",
+      price: 0,
+      date_active: "",
+      filters: [],
+      apartment_photos: [],
+      property: {
+        title: "",
+        city: "",
+        street: "",
+        home_number: 0,
+        floor_number: 0,
+        number_of_levels: 0,
+        number_of_rooms: 0,
+        square_meters: 0,
+        building_type: "APARTMENT_BUILDING",
+        latitude: null,
+        longitude: null,
+      },
+    },
+  });
+  const { reset } = formCreate;
   useEffect(() => {
-    async function handlegetPropertyDetail() {
+    async function handlegetListingDetail() {
       try {
         if (!pk) throw new AxiosError("No rental identifier");
-        const resp = await RentalService.getPropertyDetail(pk);
+        const resp = await RentalService.getListingDetail(pk);
 
-        setRentalOffert(resp);
         setImgs(resp.apartment_photos);
+        reset(RentalService.toListingFormState(resp));
       } catch (error: unknown) {
         handleDrfGetError(error, setRentalError);
       }
     }
-    handlegetPropertyDetail();
-  }, [pk]);
+    handlegetListingDetail();
+  }, [reset, pk]);
 
   const onSubmitForm = async (
-    data: CreateListingType,
+    data: ListingCreateType,
     imgs: GalleryImage[],
     croppedImgs: GalleryImage[],
     coordinates: PropertyCoordinatesType,
   ) => {
-    const dataToSend = RentalService.preparePropertyDataToSend(
+    const dataToSend = RentalService.prepareListingDataToSend(
       data,
       imgs,
       croppedImgs,
       coordinates,
     );
 
-    await RentalService.createPropertyItem(dataToSend);
+    await RentalService.createListingItem(dataToSend);
     setImgs([]);
     setCroppedImgs([]);
   };
@@ -74,23 +95,25 @@ function EditListingPage() {
         </div>
         {rentalError ? (
           <ErrorMessage txt={rentalError} />
-        ) : !rentalOffert ? (
+        ) : !imgs.length ? (
           <p className="text-sm text-[#6b7280] dark:text-slate-400">
             Loading...
           </p>
         ) : (
-          <CreateListingForm
-            initialData={RentalService.toFormState(rentalOffert)}
-            imgs={imgs}
-            setImgs={setImgs}
-            croppedImgs={croppedImgs}
-            setCroppedImgs={setCroppedImgs}
-            onSubmitForm={onSubmitForm}
-          />
+          <FormProvider {...formCreate}>
+            <CreateListingForm
+              imgs={imgs}
+              setImgs={setImgs}
+              croppedImgs={croppedImgs}
+              setCroppedImgs={setCroppedImgs}
+              onSubmitForm={onSubmitForm}
+              mode="edit"
+            />
+          </FormProvider>
         )}
       </section>
     </main>
   );
 }
 
-export default EditListingPage;
+export default EditRentalPage;
