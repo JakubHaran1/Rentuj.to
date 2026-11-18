@@ -10,8 +10,7 @@ export interface CropArea {
   height: number;
 }
 
-// Same shape as the backend PropertyImg. pk is a number for saved images
-// and a client-side UUID for new ones (those also carry the file to upload).
+// pk is a number for saved images and a client-side UUID for new ones.
 export interface GalleryImage {
   pk: number | string;
   img: string;

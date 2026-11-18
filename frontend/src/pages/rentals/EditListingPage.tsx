@@ -1,17 +1,17 @@
 import { AxiosError } from "axios";
-import Button from "../components/common/Button";
-import CreateListingForm from "../components/createListings/CreateListingForm";
+import Button from "../../components/common/Button";
+import CreateListingForm from "../../components/createListings/CreateListingForm";
 import { useParams } from "react-router-dom";
-import { RentalService } from "../services/RentalService";
+import { RentalService } from "../../services/RentalService";
 import { useEffect, useState } from "react";
 import type {
   ListingCreateType,
   PropertyCoordinatesType,
-} from "../types/propertyTypes";
-import { handleDrfGetError } from "../services/helpers";
+} from "../../types/propertyTypes";
+import { handleDrfGetError } from "../../services/helpers";
 
-import ErrorMessage from "../components/common/ErrorMessage";
-import type { GalleryImage } from "../types/imgTypes";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import type { GalleryImage } from "../../types/imgTypes";
 import { FormProvider, useForm } from "react-hook-form";
 
 function EditRentalPage() {

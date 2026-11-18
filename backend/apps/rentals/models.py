@@ -23,17 +23,23 @@ class Property(models.Model):
     city = models.CharField(max_length=80)
     street = models.CharField(max_length=80)
     home_number = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)])
+        default=0, validators=[MinValueValidator(0)])
     floor_number = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)])
+        default=0, validators=[MinValueValidator(0)])
     number_of_levels = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)])
+        default=0, validators=[MinValueValidator(0)])
     number_of_rooms = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)])
-    square_meters = models.FloatField(validators=[MinValueValidator(1)])
+        default=0, validators=[MinValueValidator(0)])
+    square_meters = models.FloatField(validators=[MinValueValidator(0)])
+    owner = models.ForeignKey(
+        User, related_name="properties", on_delete=models.CASCADE)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
     building_type = models.CharField(choices=BuildingType.choices)
+
+    class Meta:
+        verbose_name = "Property"
+        verbose_name_plural = "Properties"
 
     def __str__(self):
         return f"{self.title} | {self.street}  | {self.home_number}"
@@ -45,12 +51,14 @@ class PropertyFilterName(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "PropertyFilterNames"
+        verbose_name_plural = "PropertyFilterNames"
+
 
 class Listing(models.Model):
     property = models.ForeignKey(
         Property, related_name="listings", on_delete=models.CASCADE)
-    owner = models.ForeignKey(
-        User, related_name="listings", on_delete=models.CASCADE)
     title = models.CharField(max_length=150, blank=True, default="")
     is_active = models.BooleanField(default=True)
     description = models.CharField(max_length=250, default="", null=True)
@@ -74,6 +82,8 @@ class Listing(models.Model):
                 name="one_active_listing_per_property",
             ),
         ]
+        verbose_name = "Listing"
+        verbose_name_plural = "Listings"
 
     def __str__(self):
         return self.title or self.property.title
@@ -101,9 +111,16 @@ class PropertyFilter(models.Model):
             ),
         ]
 
+        verbose_name = "PropertyFilters"
+        verbose_name_plural = "PropertyFilters"
+
 
 class PropertyImg(models.Model):
     img = models.ImageField(upload_to=create_path, default="")
     listing = models.ForeignKey(
         Listing, related_name="apartment_photos", on_delete=models.CASCADE)
     is_main = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "PropertyImg"
+        verbose_name_plural = "PropertyImgs"

@@ -35,7 +35,7 @@ class PropertyImgSerializer(serializers.ModelSerializer):
 
     def validate_listing(self, listing):
         request = self.context["request"]
-        if listing.owner_id != request.user.pk:
+        if listing.property.owner_id != request.user.pk:
 
             raise serializers.ValidationError(
                 "You can add images only to your own listings.")
@@ -85,12 +85,14 @@ class PropertyFilterSerializer(serializers.ModelSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    owner = UserSerializer(read_only=True)
+
     class Meta:
         model = Property
         fields = [
             "pk", "title", "city", "street", "home_number", "floor_number",
             "number_of_levels", "number_of_rooms", "square_meters",
-            "latitude", "longitude", "building_type",
+            "latitude", "longitude", "building_type", "owner",
         ]
 
 
@@ -100,7 +102,7 @@ class ListingSerializer(serializers.ModelSerializer):
         source="existing_property", queryset=Property.objects.all(),
         write_only=True, required=False,
     )
-    owner = UserSerializer(read_only=True)
+
     filters = PropertyFilterSerializer(
         many=True, source="property_filters", required=False)
 
@@ -110,7 +112,7 @@ class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
         fields = [
-            "pk", "property", "property_id", "title", "is_active", "owner",
+            "pk", "property", "property_id", "title", "is_active",
             "description", "price", "date_active", "filters", "apartment_photos",
         ]
         validators = []
@@ -167,7 +169,8 @@ class ListingSerializer(serializers.ModelSerializer):
         filters = validated_data.pop("property_filters", [])
 
         if existing_property is None:
-            property_obj = Property.objects.create(**property_data)
+            property_obj = Property.objects.create(
+                owner=self.context["request"].user, **property_data)
         else:
             property_obj = Property.objects.select_for_update().get(pk=existing_property.pk)
 
@@ -177,7 +180,7 @@ class ListingSerializer(serializers.ModelSerializer):
                 is_active=True).update(is_active=False)
 
         listing = Listing.objects.create(
-            property=property_obj, owner=self.context["request"].user, **validated_data
+            property=property_obj,  **validated_data
         )
         set_listing_filters(listing, filters)
         return listing

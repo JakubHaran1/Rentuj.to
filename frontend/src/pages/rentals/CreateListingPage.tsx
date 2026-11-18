@@ -1,14 +1,14 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { useState } from "react";
 
-import type { GalleryImage } from "../types/imgTypes";
+import type { GalleryImage } from "../../types/imgTypes";
 import type {
   ListingCreateType,
   PropertyCoordinatesType,
-} from "../types/propertyTypes";
+} from "../../types/propertyTypes";
 
-import { RentalService } from "../services/RentalService";
-import CreateListingForm from "../components/createListings/CreateListingForm";
+import { RentalService } from "../../services/RentalService";
+import CreateListingForm from "../../components/createListings/CreateListingForm";
 function CreateListing() {
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
   const [croppedImgs, setCroppedImgs] = useState<GalleryImage[]>([]);

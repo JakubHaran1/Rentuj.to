@@ -10,7 +10,7 @@ function BuildingType({
   ...BuildingTypeProps
 }: BuildingTypeProps) {
   return (
-    <label className="block text-sm font-medium text-[#1f2937] dark:text-slate-200">
+    <label className="block text-sm font-medium text-[#1f2937] dark:text-slate-200 ">
       Building type
       <select
         className={`mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white ${className}`}

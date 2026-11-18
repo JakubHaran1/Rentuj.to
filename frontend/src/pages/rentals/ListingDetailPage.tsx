@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { RentalService } from "../services/RentalService";
+import { RentalService } from "../../services/RentalService";
 import { AxiosError } from "axios";
-import { handleDrfGetError } from "../services/helpers";
-import ErrorMessage from "../components/common/ErrorMessage";
-import Map from "../components/common/Map";
+import { handleDrfGetError } from "../../services/helpers";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import Map from "../../components/common/Map";
 
-import type { ListingDefaultType } from "../types/propertyTypes";
-import Button from "../components/common/Button";
+import type { ListingDefaultType } from "../../types/propertyTypes";
+import Button from "../../components/common/Button";
 
 function RentalsDetailPage() {
   const { pk } = useParams();

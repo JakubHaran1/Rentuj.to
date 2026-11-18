@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import Button from "../components/common/Button";
-import ErrorMessage from "../components/common/ErrorMessage";
-import { useUserContext } from "../components/context/UserContext";
-import { RentalService } from "../services/RentalService";
-import { handleDrfGetError } from "../services/helpers";
-import type { PropertyType } from "../types/propertyTypes";
+import Button from "../../components/common/Button";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { useUserContext } from "../../components/context/UserContext";
+import { RentalService } from "../../services/RentalService";
+import { handleDrfGetError } from "../../services/helpers";
+import type { PropertyType } from "../../types/propertyTypes";
+import PropertyBoxes from "../../components/rentals/PropertyBoxes";
 
 function MyPropertiesPage() {
   const [properties, setProperties] = useState<PropertyType[]>([]);
@@ -22,12 +23,9 @@ function MyPropertiesPage() {
       }
 
       try {
-        const listings = await RentalService.getListingsList(user.pk);
+        const listings = await RentalService.getPropertyList(user.pk);
         if (isMounted) {
-          const uniqueProperties = new Map(
-            listings.map((listing) => [listing.property.pk, listing.property]),
-          );
-          setProperties([...uniqueProperties.values()]);
+          setProperties(listings);
         }
       } catch (error: unknown) {
         if (isMounted) {
@@ -82,33 +80,7 @@ function MyPropertiesPage() {
         </section>
       ) : (
         <section className="mt-8 space-y-4" aria-label="Your properties">
-          {properties.map((property) => (
-            <article
-              className="rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-              key={property.pk}
-            >
-              <h2 className="text-xl font-semibold text-[#16324f] dark:text-white">
-                {property.title}
-              </h2>
-              <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-300">
-                {property.street} {property.home_number}, {property.city}
-              </p>
-              <dl className="mt-5 flex flex-wrap gap-2 text-sm text-[#536454] dark:text-slate-300">
-                <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                  <dt className="sr-only">Area</dt>
-                  <dd>{property.square_meters} m²</dd>
-                </div>
-                <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                  <dt className="sr-only">Rooms</dt>
-                  <dd>{property.number_of_rooms} rooms</dd>
-                </div>
-                <div className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                  <dt className="sr-only">Building type</dt>
-                  <dd>{property.building_type.replaceAll("_", " ")}</dd>
-                </div>
-              </dl>
-            </article>
-          ))}
+          <PropertyBoxes properties={properties} />
         </section>
       )}
     </main>

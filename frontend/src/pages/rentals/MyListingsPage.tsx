@@ -1,11 +1,11 @@
-import type { ListingDefaultType } from "../types/propertyTypes";
-import PropertyBoxes from "../components/rentals/PropertyBoxes";
+import type { ListingDefaultType } from "../../types/propertyTypes";
+import ListingBoxes from "../../components/rentals/ListingBoxes";
 import { useEffect, useState } from "react";
-import { RentalService } from "../services/RentalService";
-import { useUserContext } from "../components/context/UserContext";
-import Button from "../components/common/Button";
-import { handleDrfGetError } from "../services/helpers";
-import ErrorMessage from "../components/common/ErrorMessage";
+import { RentalService } from "../../services/RentalService";
+import { useUserContext } from "../../components/context/UserContext";
+import Button from "../../components/common/Button";
+import { handleDrfGetError } from "../../services/helpers";
+import ErrorMessage from "../../components/common/ErrorMessage";
 
 function MyListingPage() {
   const [properties, setProperties] = useState<ListingDefaultType[]>([]);
@@ -72,7 +72,7 @@ function MyListingPage() {
           </div>
         )}
       </section>
-      <PropertyBoxes
+      <ListingBoxes
         boxType="Your listings"
         boxData={properties}
         editable

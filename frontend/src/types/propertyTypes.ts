@@ -10,23 +10,23 @@ type BuildingType =
   | "TENEMENT"
   | "ROOM_IN_SHARED_APARTMENT";
 
-type RentalFilterType = {
+type ListingFilterNameType = {
   pk: number;
   name: string;
 };
 
-type RentalFilterAssignmentType = Pick<RentalFilterType, "pk"> & {
+type ListingFilterAssignmentType = Pick<ListingFilterNameType, "pk"> & {
   value: -1 | 0 | 1;
 };
 
-type RentalFilterResponseType = RentalFilterType & RentalFilterAssignmentType;
+type ListingFilterType = ListingFilterNameType & ListingFilterAssignmentType;
 
 type PropertyCoordinatesType = {
   latitude: number | null;
   longitude: number | null;
 };
 
-type PropertyDefaultType = PropertyCoordinatesType & {
+type PropertyDefaultType = {
   title: string;
   city: string;
   street: string;
@@ -38,8 +38,15 @@ type PropertyDefaultType = PropertyCoordinatesType & {
   building_type: BuildingType;
 };
 
-type PropertyType = PropertyDefaultType & {
+type PropertyCreateType = PropertyDefaultType & PropertyCoordinatesType;
+
+type PropertyOwnerType = Omit<UserType, "avatar"> & {
+  avatar: { img: string; user: string }[];
+};
+
+type PropertyType = PropertyCreateType & {
   pk: number;
+  owner: PropertyOwnerType;
 };
 
 type ListingDefaultType = {
@@ -48,20 +55,19 @@ type ListingDefaultType = {
   description: string | null;
   title: string;
   is_active: boolean;
-  owner: UserType;
   price: number;
   date_active: string | null;
-  filters: RentalFilterResponseType[];
+  filters: ListingFilterType[];
   apartment_photos: GalleryImage[];
 };
 
 type ListingCreateType = {
-  property: PropertyDefaultType;
+  property: PropertyCreateType;
   title: string;
   description: string | null;
   price: number;
   date_active: string | null;
-  filters: RentalFilterAssignmentType[];
+  filters: ListingFilterAssignmentType[];
   apartment_photos: GalleryImage[];
 };
 
@@ -90,7 +96,9 @@ export type {
   MainFiltersType,
   ListingDefaultType,
   PropertyType,
-  RentalFilterAssignmentType,
-  RentalFilterResponseType,
-  RentalFilterType,
+  PropertyCreateType,
+  PropertyDefaultType,
+  ListingFilterAssignmentType,
+  ListingFilterType,
+  ListingFilterNameType,
 };

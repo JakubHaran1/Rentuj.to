@@ -68,8 +68,20 @@ const handleDrfGetError = (
   setError: Dispatch<SetStateAction<string>>,
 ) => {
   if (axios.isAxiosError(error)) {
-    const error_data = error.response?.data;
-    setError(error_data);
+    const data: unknown = error.response?.data;
+
+    if (!error.response) {
+      setError("Unable to connect. Please try again.");
+    } else if (
+      data !== null &&
+      typeof data === "object" &&
+      "detail" in data &&
+      typeof data.detail === "string"
+    ) {
+      setError(data.detail);
+    } else {
+      setError("An error occurred. Please try again.");
+    }
   } else {
     setError("An unexpected error occurred. Please try again.");
   }

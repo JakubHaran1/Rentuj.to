@@ -3,7 +3,7 @@ import { useFormContext } from "react-hook-form";
 import type {
   ListingCreateType,
   MainFiltersType,
-  RentalFilterResponseType,
+  ListingFilterType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
 import BuildingType from "./BuildingType";
@@ -34,7 +34,7 @@ function RentalFilters({
 
   const [showRentalFilters, setShowRentalFilters] = useState(mode === "set");
   const [rentalFilters, setRentalFilters] = useState<
-    RentalFilterResponseType[]
+    ListingFilterType[]
   >([]);
 
   const onMainFilterChange = <K extends keyof MainFiltersType>(
@@ -58,8 +58,8 @@ function RentalFilters({
   };
 
   useEffect(() => {
-    async function getPropertyFilters() {
-      const resp = await RentalService.getPropertyFilters();
+    async function getListingFilters() {
+      const resp = await RentalService.getListingFilters();
       setRentalFilters(
         resp.map((filter) => ({
           ...filter,
@@ -67,7 +67,7 @@ function RentalFilters({
         })),
       );
     }
-    getPropertyFilters();
+    getListingFilters();
   }, []);
 
   return (

@@ -1,3 +1,4 @@
+import json
 from urllib.request import Request
 from rest_framework.response import Response
 from django.core.exceptions import PermissionDenied
@@ -6,7 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 
 from .models import Listing, Property, PropertyImg, PropertyFilterName
 from .serializers import (
@@ -14,36 +15,43 @@ from .serializers import (
 )
 
 
-class PropertyViewSet(ReadOnlyModelViewSet):
-    queryset = Property.objects.filter(listings__is_active=True)
+class PropertyViewSet(ModelViewSet):
+    queryset = Property.objects.select_related("owner").all()
     serializer_class = PropertySerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["owner_id"]
+
+    def get_permissions(self):
+        return [AllowAny()] if self.action in ["list", "retrieve"] else [IsAuthenticated()]
 
 
 @api_view(["GET"])
 def get_listings_for_property(request: Request, property_id):
-
     listing_arr = Listing.objects.filter(property_id=property_id)
 
-    serializer = ListingSerializer(listing_arr, many=True)
+    serializer = ListingSerializer(
+        listing_arr, many=True, context={"request": request})
     return Response(serializer.data)
 
 
 class ListingViewSet(ModelViewSet):
-    queryset = Listing.objects.select_related("property", "owner").filter(is_active=True).prefetch_related(
+
+    queryset = Listing.objects.select_related("property").filter(is_active=True).prefetch_related(
         "apartment_photos", "property_filters__rental_filter"
     )
 
     serializer_class = ListingSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["owner_id", "property_id"]
+    filterset_fields = ["property_id"]
 
     def get_permissions(self):
         return [AllowAny()] if self.action in ["list", "retrieve"] else [IsAuthenticated()]
 
+    @transaction.atomic
     def save_listing(self, serializer: ListingSerializer):
         try:
-            serializer.save()
+            return serializer.save()
         except IntegrityError as error:
             cause = error.__cause__
             if getattr(getattr(cause, "diag", None), "constraint_name", None) == "one_active_listing_per_property":
@@ -51,26 +59,48 @@ class ListingViewSet(ModelViewSet):
                     {"is_active": "This property already has an active listing."}) from error
             raise
 
-    def perform_create(self, serializer: ListingSerializer):
-        self.save_listing(serializer)
+    def save_listings_with_img(self, request):
+        listing_data = json.loads(request.data["listing"])
+        imgs_data = json.loads(request.data["images"])
+
+        with transaction.atomic():
+            listing_serializer = ListingSerializer(
+                data=listing_data, context={"request": request})
+
+            listing_serializer.is_valid()
+            listing = self.save_listing(listing_serializer)
+
+            for img_data in imgs_data:
+                img_serializer = PropertyImgSerializer(
+                    data={
+                        "listing": listing.pk,
+                        "img": request.FILES[img_data["file_key"]],
+                        "is_main": img_data["is_main"],
+                    },
+                    context={"request": request},
+                )
+                img_serializer.is_valid(raise_exception=True)
+                img_serializer.save()
+
+    def create(self, request):
+        listing = self.save_listings_with_img(request)
+        return Response(
+            ListingSerializer(listing, context={"request": request}).data,
+            status=201,
+        )
 
     def perform_update(self, serializer: ListingSerializer):
-        if serializer.instance.owner_id != self.request.user.pk:
+        if serializer.instance.property.owner_id != self.request.user.pk:
             raise PermissionDenied("You can edit only your own listings.")
-        self.save_listing(serializer)
+
+        self.save_listings_with_img()
 
     @transaction.atomic
     def perform_destroy(self, instance: Listing):
 
-        if instance.owner_id != self.request.user.pk:
+        if instance.property.owner_id != self.request.user.pk:
             raise PermissionDenied("You can delete only your own listings.")
-        property_obj = Property.objects.select_for_update().get(pk=instance.property_id)
-        instance.refresh_from_db()
 
-        if instance.is_active:
-            if property_obj.listings.exclude(pk=instance.pk).exists():
-                raise ValidationError(
-                    {"is_active": "Activate another listing before deleting this one."})
         instance.delete()
 
 
@@ -82,12 +112,12 @@ class PropertyImgViewSet(ModelViewSet):
         return [AllowAny()] if self.action in ["list", "retrieve"] else [IsAuthenticated()]
 
     def perform_update(self, serializer: PropertyImgSerializer):
-        if serializer.instance.listing.owner_id != self.request.user.pk:
+        if serializer.instance.listing.property.owner_id != self.request.user.pk:
             raise PermissionDenied("You can edit only your own images.")
         serializer.save()
 
     def perform_destroy(self, instance: PropertyImg):
-        if instance.listing.owner_id != self.request.user.pk:
+        if instance.listing.property.owner_id != self.request.user.pk:
             raise PermissionDenied("You can delete only your own images.")
         instance.delete()
 
