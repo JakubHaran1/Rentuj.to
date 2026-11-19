@@ -66,9 +66,6 @@ function MyListingPage() {
             <p className="mt-2 text-sm text-[#6b7280] dark:text-slate-300">
               This is a place where you can add, edit or delete your rentals
             </p>
-            <Button className="my-3" to="/my-properties" variant="secondary">
-              Show my properties
-            </Button>
           </div>
         )}
       </section>

@@ -138,23 +138,6 @@ function Header({ isDarkMode, setIsDarkMode }: HeaderProps) {
             </Button>
           )}
           {user ? (
-            <Button to="/property-create" variant="secondary">
-              Add property
-            </Button>
-          ) : (
-            <Button
-              onClick={() => {
-                const shouldOpenSignIn = openMenu !== "signin";
-                setLoginPrompt(shouldOpenSignIn ? "property" : null);
-                setOpenMenu(shouldOpenSignIn ? "signin" : null);
-              }}
-              type="button"
-              variant="secondary"
-            >
-              Add property
-            </Button>
-          )}
-          {user ? (
             <AccountMenu openMenu={openMenu} setOpenMenu={setOpenMenu} />
           ) : (
             <>

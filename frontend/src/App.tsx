@@ -5,9 +5,6 @@ import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import UpdateUserPage from "./pages/UpdateUserPage";
 import CreateListing from "./pages/rentals/CreateListingPage";
-import CreatePropertyPage from "./pages/rentals/CreatePropertyPage";
-import MyPropertiesPage from "./pages/rentals/MyPropertiesPage";
-import PropertiesDetailPage from "./pages/rentals/PropertiesDetailPage";
 import MyListingPage from "./pages/rentals/MyListingsPage";
 import RentalsDetailPage from "./pages/rentals/ListingDetailPage";
 
@@ -51,12 +48,6 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/profile/edit" element={<UpdateUserPage />} />
             <Route path="/listing-create" element={<CreateListing />} />
-            <Route path="/property-create" element={<CreatePropertyPage />} />
-            <Route path="/my-properties" element={<MyPropertiesPage />} />
-            <Route
-              path="/property-detail/:pk"
-              element={<PropertiesDetailPage />}
-            />
             <Route path="/my-listings" element={<MyListingPage />} />
             <Route path="/rental-edit/:pk" element={<EditRentalPage />} />
           </Route>

@@ -55,9 +55,7 @@ function ListingBoxes({
                           {listing.title}
                         </h3>
                         <p className="mt-1 text-sm text-[#6b7280] dark:text-slate-400">
-                          {listing.property.street}{" "}
-                          {listing.property.home_number},{" "}
-                          {listing.property.city}
+                          {listing.street} {listing.home_number}, {listing.city}
                         </p>
                       </div>
 
@@ -91,7 +89,7 @@ function ListingBoxes({
 
                     <div className="mt-5 flex flex-wrap gap-2 text-sm text-[#536454] dark:text-slate-300">
                       <span className="rounded-full bg-white/70 px-3 py-1 dark:bg-slate-800">
-                        {listing.property.square_meters} m²
+                        {listing.square_meters} m²
                       </span>
                       {details.filters.map((filter) => (
                         <span

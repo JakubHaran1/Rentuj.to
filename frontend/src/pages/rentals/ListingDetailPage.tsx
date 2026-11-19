@@ -100,9 +100,8 @@ function RentalsDetailPage() {
             </button>
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-gray-500">
-                {rentalOffert.property.street}{" "}
-                {rentalOffert.property.home_number},{" "}
-                {rentalOffert.property.city}
+                {rentalOffert.street} {rentalOffert.home_number},{" "}
+                {rentalOffert.city}
               </span>
             </div>
 

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.users.serializers import UserSerializer
 from common import save_img
 
-from .models import Listing, Property, PropertyFilter, PropertyImg, PropertyFilterName
+from .models import Listing, PropertyFilter, PropertyImg, PropertyFilterName
 
 MAX_PROPERTY_IMAGES = 10
 
@@ -35,7 +35,7 @@ class PropertyImgSerializer(serializers.ModelSerializer):
 
     def validate_listing(self, listing):
         request = self.context["request"]
-        if listing.property.owner_id != request.user.pk:
+        if listing.owner_id != request.user.pk:
 
             raise serializers.ValidationError(
                 "You can add images only to your own listings.")
@@ -84,24 +84,8 @@ class PropertyFilterSerializer(serializers.ModelSerializer):
         fields = ["pk", "name", "value"]
 
 
-class PropertySerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Property
-        fields = [
-            "pk", "title", "city", "street", "home_number", "floor_number",
-            "number_of_levels", "number_of_rooms", "square_meters",
-            "latitude", "longitude", "building_type", "owner",
-        ]
-
-
 class ListingSerializer(serializers.ModelSerializer):
-    property = PropertySerializer(required=False)
-    property_id = serializers.PrimaryKeyRelatedField(
-        source="existing_property", queryset=Property.objects.all(),
-        write_only=True, required=False,
-    )
+    owner = UserSerializer(read_only=True)
 
     filters = PropertyFilterSerializer(
         many=True, source="property_filters", required=False)
@@ -112,47 +96,14 @@ class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
         fields = [
-            "pk", "property", "property_id", "title", "is_active",
+            "pk", "title", "city", "street", "home_number", "floor_number",
+            "number_of_levels", "number_of_rooms", "square_meters",
+            "latitude", "longitude", "building_type", "owner", "is_active",
             "description", "price", "date_active", "filters", "apartment_photos",
         ]
         validators = []
 
-    def to_representation(self, instance):
-        """Customize the representation of a listing instance."""
-        data = super().to_representation(instance)
-        title = instance.title
-        if instance.property.listings.count() > 1:
-            title = f'{instance.title} ({instance.property.listings.count()})'
-        data["title"] = title or instance.property.title
-        return data
-
     def validate(self, attrs):
-        property_data = attrs.get("property")
-        existing_property = attrs.get("existing_property")
-
-        if self.instance is None:
-            if property_data is None and existing_property is None:
-                raise serializers.ValidationError(
-                    "Provide either property or property_id.")
-
-            if property_data is not None and existing_property is not None:
-                raise serializers.ValidationError(
-                    "Provide only one of property or property_id.")
-
-            if property_data is not None and not attrs.get("is_active", True):
-                raise serializers.ValidationError(
-                    {"is_active": "The first listing must be active."})
-
-            if existing_property and not existing_property.listings.filter(
-                owner=self.context["request"].user
-            ).exists():
-                raise serializers.ValidationError(
-                    {"property_id": "You cannot add a listing to this property."})
-
-        elif existing_property is not None:
-            raise serializers.ValidationError(
-                {"property_id": "A listing cannot be moved to another property."})
-
         filters = attrs.get("property_filters")
         if filters is not None:
             ids = [item["rental_filter"].pk for item in filters]
@@ -164,45 +115,16 @@ class ListingSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        property_data = validated_data.pop("property", None)
-        existing_property = validated_data.pop("existing_property", None)
         filters = validated_data.pop("property_filters", [])
-
-        if existing_property is None:
-            property_obj = Property.objects.create(
-                owner=self.context["request"].user, **property_data)
-        else:
-            property_obj = Property.objects.select_for_update().get(pk=existing_property.pk)
-
-        # Change the previously active listing
-        if validated_data.get("is_active", True):
-            property_obj.listings.filter(
-                is_active=True).update(is_active=False)
-
         listing = Listing.objects.create(
-            property=property_obj,  **validated_data
+            owner=self.context["request"].user, **validated_data
         )
         set_listing_filters(listing, filters)
         return listing
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        property_data = validated_data.pop("property", None)
         filters = validated_data.pop("property_filters", None)
-        property_obj = Property.objects.select_for_update().get(pk=instance.property_id)
-        instance.refresh_from_db()
-
-        if validated_data.get("is_active") is True and not instance.is_active:
-            property_obj.listings.filter(
-                is_active=True).update(is_active=False)
-
-        if property_data is not None:
-            for key, value in property_data.items():
-                setattr(property_obj, key, value)
-
-            property_obj.save()
-            instance.property = property_obj
-
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()

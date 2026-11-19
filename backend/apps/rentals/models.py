@@ -18,33 +18,6 @@ class BuildingType(models.TextChoices):
     )
 
 
-class Property(models.Model):
-    title = models.CharField(max_length=150)
-    city = models.CharField(max_length=80)
-    street = models.CharField(max_length=80)
-    home_number = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
-    floor_number = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
-    number_of_levels = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
-    number_of_rooms = models.IntegerField(
-        default=0, validators=[MinValueValidator(0)])
-    square_meters = models.FloatField(validators=[MinValueValidator(0)])
-    owner = models.ForeignKey(
-        User, related_name="properties", on_delete=models.CASCADE)
-    latitude = models.FloatField(null=True)
-    longitude = models.FloatField(null=True)
-    building_type = models.CharField(choices=BuildingType.choices)
-
-    class Meta:
-        verbose_name = "Property"
-        verbose_name_plural = "Properties"
-
-    def __str__(self):
-        return f"{self.title} | {self.street}  | {self.home_number}"
-
-
 class PropertyFilterName(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -57,9 +30,23 @@ class PropertyFilterName(models.Model):
 
 
 class Listing(models.Model):
-    property = models.ForeignKey(
-        Property, related_name="listings", on_delete=models.CASCADE)
     title = models.CharField(max_length=150, blank=True, default="")
+    city = models.CharField(max_length=80)
+    street = models.CharField(max_length=80)
+    home_number = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)])
+    floor_number = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)])
+    number_of_levels = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)])
+    number_of_rooms = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)])
+    square_meters = models.FloatField(validators=[MinValueValidator(0)])
+    owner = models.ForeignKey(
+        User, related_name="listings", on_delete=models.CASCADE)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    building_type = models.CharField(choices=BuildingType.choices)
     is_active = models.BooleanField(default=True)
     description = models.CharField(max_length=250, default="", null=True)
     price = models.FloatField(validators=[MinValueValidator(0)])
@@ -75,18 +62,11 @@ class Listing(models.Model):
     )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["property"],
-                condition=models.Q(is_active=True),
-                name="one_active_listing_per_property",
-            ),
-        ]
         verbose_name = "Listing"
         verbose_name_plural = "Listings"
 
     def __str__(self):
-        return self.title or self.property.title
+        return self.title
 
 
 class PropertyFilter(models.Model):

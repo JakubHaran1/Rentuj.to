@@ -1,26 +1,20 @@
 from django.contrib import admin
 
-from .models import Listing, Property, PropertyFilter, PropertyImg, PropertyFilterName
-
-
-class PropertySite(admin.ModelAdmin):
-    list_display = ["title",
-                    "street", "home_number", "owner", "floor_number"]
+from .models import Listing, PropertyFilter, PropertyImg, PropertyFilterName
 
 
 class ListingSite(admin.ModelAdmin):
-    list_display = ["property__title", "is_active"]
+    list_display = ["title", "is_active"]
 
 
 class PropertyImgSite(admin.ModelAdmin):
-    list_display = ["listing__property__title", "listing"]
+    list_display = ["listing", "is_main"]
 
 
 class FilterSite(admin.ModelAdmin):
     list_display = ["pk", "name"]
 
 
-admin.site.register(Property, PropertySite)
 admin.site.register(Listing, ListingSite)
 admin.site.register(PropertyImg, PropertyImgSite)
 admin.site.register(PropertyFilterName, FilterSite)

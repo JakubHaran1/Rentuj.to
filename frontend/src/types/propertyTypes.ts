@@ -26,8 +26,7 @@ type PropertyCoordinatesType = {
   longitude: number | null;
 };
 
-type PropertyDefaultType = {
-  title: string;
+type ListingLocationType = {
   city: string;
   street: string;
   home_number: number;
@@ -38,20 +37,13 @@ type PropertyDefaultType = {
   building_type: BuildingType;
 };
 
-type PropertyCreateType = PropertyDefaultType & PropertyCoordinatesType;
-
-type PropertyOwnerType = Omit<UserType, "avatar"> & {
+type ListingOwnerType = Omit<UserType, "avatar"> & {
   avatar: { img: string; user: string }[];
 };
 
-type PropertyType = PropertyCreateType & {
+type ListingDefaultType = ListingLocationType & PropertyCoordinatesType & {
   pk: number;
-  owner: PropertyOwnerType;
-};
-
-type ListingDefaultType = {
-  pk: number;
-  property: PropertyType;
+  owner: ListingOwnerType;
   description: string | null;
   title: string;
   is_active: boolean;
@@ -61,8 +53,7 @@ type ListingDefaultType = {
   apartment_photos: GalleryImage[];
 };
 
-type ListingCreateType = {
-  property: PropertyCreateType;
+type ListingCreateType = ListingLocationType & PropertyCoordinatesType & {
   title: string;
   description: string | null;
   price: number;
@@ -95,9 +86,6 @@ export type {
   PropertyCoordinatesType,
   MainFiltersType,
   ListingDefaultType,
-  PropertyType,
-  PropertyCreateType,
-  PropertyDefaultType,
   ListingFilterAssignmentType,
   ListingFilterType,
   ListingFilterNameType,

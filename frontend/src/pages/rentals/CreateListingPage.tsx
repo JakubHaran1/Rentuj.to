@@ -8,6 +8,7 @@ import type {
 } from "../../types/propertyTypes";
 
 import { RentalService } from "../../services/RentalService";
+
 import CreateListingForm from "../../components/createListings/CreateListingForm";
 function CreateListing() {
   const [imgs, setImgs] = useState<GalleryImage[]>([]);
@@ -21,19 +22,16 @@ function CreateListing() {
       date_active: "",
       filters: [],
       apartment_photos: [],
-      property: {
-        title: "",
-        city: "",
-        street: "",
-        home_number: 0,
-        floor_number: 0,
-        number_of_levels: 0,
-        number_of_rooms: 0,
-        square_meters: 0,
-        building_type: "APARTMENT_BUILDING",
-        latitude: null,
-        longitude: null,
-      },
+      city: "",
+      street: "",
+      home_number: 0,
+      floor_number: 0,
+      number_of_levels: 0,
+      number_of_rooms: 0,
+      square_meters: 0,
+      building_type: "APARTMENT_BUILDING",
+      latitude: null,
+      longitude: null,
     },
   });
 

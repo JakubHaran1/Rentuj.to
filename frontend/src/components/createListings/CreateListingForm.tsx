@@ -1,25 +1,34 @@
 import { useFormContext } from "react-hook-form";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type {
-  ListingCreateType,
   GeoApiResponseType,
+  ListingCreateType,
   PropertyCoordinatesType,
 } from "../../types/propertyTypes";
 import Input from "../common/Input";
-import Suggestions from "./Suggestions";
-import BuildingType from "./BuildingType";
 import ImgGallery from "../imgGallery/ImgGallery";
 import Button from "../common/Button";
+import ErrorMessage from "../common/ErrorMessage";
+import { handleDrfPostError } from "../../services/helpers";
 import { GeoService } from "../../services/geoService";
 import type { GalleryImage } from "../../types/imgTypes";
+import CreatePropertyForm from "./CreatePropertyForm";
 import RentalFilters from "./RentalFilters";
+
+const listingFields = [
+  "title",
+  "description",
+  "price",
+  "date_active",
+  "city",
+  "street",
+  "home_number",
+  "floor_number",
+  "number_of_levels",
+  "number_of_rooms",
+  "square_meters",
+  "building_type",
+] as const;
 
 type CreateListingFormProps = {
   imgs: GalleryImage[];
@@ -45,172 +54,45 @@ function CreateListingForm({
   mode = "create",
 }: CreateListingFormProps) {
   const formCreate = useFormContext<ListingCreateType>();
-  const [fieldState, setFieldState] = useState("");
-  const [fieldSuggestion, setFieldSuggestion] = useState<string[]>([]);
 
-  const cityRef = useRef<HTMLDivElement>(null);
-  const streetRef = useRef<HTMLDivElement>(null);
-  const cityField = formCreate.register("property.city", {
-    required: "City field is required",
-  });
-  const streetField = formCreate.register("property.street", {
-    required: "Street field is required",
-  });
   const price = formCreate.watch("price");
   const maxPrice = 20000;
-
-  const onAddressChange = async (
-    e: ChangeEvent<HTMLInputElement>,
-    type: string,
-  ) => {
-    const address = e.target.value;
-
-    if (address.length < 3) return;
-    const dataArr: string[] = [];
-    const data = await GeoService.addressAutocomplete(address, type);
-
-    data.forEach((prop: GeoApiResponseType) =>
-      dataArr.push(prop.properties.address_line1),
-    );
-    setFieldState(type);
-    setFieldSuggestion(dataArr);
-  };
-
-  useEffect(() => {
-    const closeSuggestionList = (e: MouseEvent) => {
-      if (!(e.target instanceof Node)) return;
-      if (
-        !cityRef.current?.contains(e.target) &&
-        !streetRef.current?.contains(e.target)
-      ) {
-        setFieldState("");
-        setFieldSuggestion([]);
-      }
-    };
-    document.addEventListener("click", closeSuggestionList);
-    return () => {
-      document.removeEventListener("click", closeSuggestionList);
-    };
-  }, [cityRef, setFieldState, setFieldSuggestion, streetRef]);
 
   return (
     <form
       className="space-y-8"
       noValidate
       onSubmit={formCreate.handleSubmit(async (data) => {
-        const coordinatesData = await GeoService.geocoding<
-          GeoApiResponseType[]
-        >(data.property.city, data.property.street, data.property.home_number);
-        const coordinate =
-          coordinatesData.length === 1
-            ? coordinatesData[0]?.properties
-            : undefined;
-
-        await onSubmitForm(data, imgs, croppedImgs, {
-          latitude: coordinate?.lat ?? null,
-          longitude: coordinate?.lon ?? null,
-        });
-        formCreate.reset();
+        formCreate.clearErrors("root.server");
+        try {
+          const coordinatesData = await GeoService.geocoding<
+            GeoApiResponseType[]
+          >(
+            data.city,
+            data.street,
+            data.home_number,
+          );
+          const coordinate =
+            coordinatesData.length === 1
+              ? coordinatesData[0]?.properties
+              : undefined;
+          const coordinates: PropertyCoordinatesType = {
+            latitude: coordinate?.lat ?? null,
+            longitude: coordinate?.lon ?? null,
+          };
+          await onSubmitForm(data, imgs, croppedImgs, coordinates);
+          formCreate.reset();
+        } catch (error: unknown) {
+          const errorMessage = "Unable to submit the listing. Please try again.";
+          formCreate.setError("root.server", {
+            type: "server",
+            message: errorMessage,
+          });
+          handleDrfPostError(error, formCreate, listingFields, errorMessage);
+        }
       })}
     >
-      <fieldset>
-        <legend className="text-xl font-semibold text-[#16324f] dark:text-white">
-          Property
-        </legend>
-        <div className="grid gap-x-5 md:grid-cols-2">
-          <Input
-            label="Title"
-            maxLength={150}
-            labelClassName="mt-5 md:col-span-2"
-            error={formCreate.formState.errors.property?.title?.message}
-            {...formCreate.register("property.title", {
-              required: "Title field is required",
-            })}
-          />
-
-          <div className="relative md:col-span-2" ref={cityRef}>
-            <Input
-              label="City"
-              maxLength={80}
-              error={formCreate.formState.errors.property?.city?.message}
-              {...cityField}
-              onChange={(e) => {
-                cityField.onChange(e);
-                onAddressChange(e, "city");
-              }}
-            />
-
-            {fieldState !== "city" || fieldSuggestion.length == 0 ? (
-              ""
-            ) : (
-              <div className="absolute w-full z-20">
-                <Suggestions
-                  suggestions={fieldSuggestion}
-                  onSuggestionClick={(suggestion) => {
-                    formCreate.setValue("property.city", suggestion, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                    setFieldState("");
-                    setFieldSuggestion([]);
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="relative" ref={streetRef}>
-            <Input
-              label="Street"
-              maxLength={80}
-              error={formCreate.formState.errors.property?.street?.message}
-              {...streetField}
-              onChange={(e) => {
-                streetField.onChange(e);
-                onAddressChange(e, "street");
-              }}
-            />
-
-            {fieldState !== "street" || fieldSuggestion.length == 0 ? (
-              ""
-            ) : (
-              <div className="absolute w-full z-20">
-                <Suggestions
-                  suggestions={fieldSuggestion}
-                  onSuggestionClick={(suggestion) => {
-                    formCreate.setValue("property.street", suggestion, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                    setFieldState("");
-                    setFieldSuggestion([]);
-                  }}
-                />
-              </div>
-            )}
-          </div>
-          <Input
-            label="Home number"
-            type="number"
-            min={0}
-            error={formCreate.formState.errors.property?.home_number?.message}
-            {...formCreate.register("property.home_number", {
-              required: "Home number field is required",
-              valueAsNumber: true,
-            })}
-          />
-          <Input
-            label="Floor number"
-            type="number"
-            min={0}
-            error={formCreate.formState.errors.property?.floor_number?.message}
-            {...formCreate.register("property.floor_number", {
-              required: "Floor number field is required",
-              valueAsNumber: true,
-            })}
-          />
-        </div>
-      </fieldset>
+      <CreatePropertyForm />
       <fieldset>
         <legend className="text-xl font-semibold text-[#16324f] dark:text-white">
           Listing details
@@ -224,32 +106,7 @@ function CreateListingForm({
               error={formCreate.formState.errors.title?.message}
               {...formCreate.register("title")}
             />
-            <span className="text-xs italic text-[#16324f] dark:text-white">
-              Only you will see this title
-            </span>
           </div>
-          <Input
-            label="Number of levels"
-            type="number"
-            min={0}
-            error={
-              formCreate.formState.errors.property?.number_of_levels?.message
-            }
-            {...formCreate.register("property.number_of_levels", {
-              required: "Number of levels field is required",
-            })}
-          />
-          <Input
-            label="Number of rooms"
-            type="number"
-            min={1}
-            error={
-              formCreate.formState.errors.property?.number_of_rooms?.message
-            }
-            {...formCreate.register("property.number_of_rooms", {
-              required: "Number of rooms field is required",
-            })}
-          />
           <div className="mt-5 w-full rounded-xl border border-[#c2c9d2] bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950 md:col-span-2">
             <div className="flex items-end gap-3">
               <Input
@@ -297,26 +154,6 @@ function CreateListingForm({
             </div>
           </div>
           <Input
-            label="Square meters"
-            type="number"
-            min={0}
-            step="0.01"
-            error={formCreate.formState.errors.property?.square_meters?.message}
-            {...formCreate.register("property.square_meters", {
-              required: "Square meters field is required",
-            })}
-          />
-          <div className="mt-4">
-            <BuildingType
-              error={
-                formCreate.formState.errors.property?.building_type?.message
-              }
-              {...formCreate.register("property.building_type", {
-                required: "Building type field is required",
-              })}
-            />
-          </div>
-          <Input
             label="Active from"
             type="date"
             error={formCreate.formState.errors.date_active?.message}
@@ -359,6 +196,7 @@ function CreateListingForm({
         croppedImgs={croppedImgs}
         setCroppedImgs={setCroppedImgs}
       />
+      <ErrorMessage txt={formCreate.formState.errors.root?.server?.message} />
       {mode === "create" ? (
         <Button type="submit">Create listing</Button>
       ) : (
