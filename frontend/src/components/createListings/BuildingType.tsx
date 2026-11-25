@@ -2,10 +2,12 @@ import { type SelectHTMLAttributes } from "react";
 
 type BuildingTypeProps = SelectHTMLAttributes<HTMLSelectElement> & {
   error?: string;
+  allowEmpty?: boolean;
 };
 
 function BuildingType({
   error,
+  allowEmpty = false,
   className = "",
   ...BuildingTypeProps
 }: BuildingTypeProps) {
@@ -16,6 +18,7 @@ function BuildingType({
         className={`mt-1.5 w-full rounded-lg border border-[#c2c9d2] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white ${className}`}
         {...BuildingTypeProps}
       >
+        {allowEmpty && <option value="">Any building type</option>}
         <option value="DETACHED">Detached house</option>
         <option value="SEMI_DETACHED">Semi-detached house</option>
         <option value="TERRACED">Terraced house</option>

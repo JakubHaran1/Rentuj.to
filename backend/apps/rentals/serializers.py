@@ -31,7 +31,7 @@ class PropertyImgSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyImg
-        fields = ["pk", "img", "is_main", "listing"]
+        fields = ["pk", "img", "is_main", "listing", "position"]
 
     def validate_listing(self, listing):
         request = self.context["request"]
@@ -124,13 +124,14 @@ class ListingSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        filters = validated_data.pop("property_filters", None)
+        filters_data = validated_data.pop("property_filters", None)
+
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()
 
-        if filters is not None:
+        if filters_data is not None:
             instance.property_filters.all().delete()
-            set_listing_filters(instance, filters)
+            set_listing_filters(instance, filters_data)
 
         return instance

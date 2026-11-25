@@ -38,7 +38,7 @@ function ImgGallery({
         img: URL.createObjectURL(file),
         is_main: false,
       }));
-      if (imgs.length > MAX_PROPERTY_IMAGES) {
+      if (imgs.length + acceptedImg.length > MAX_PROPERTY_IMAGES) {
         setErrorGallery(`You can't select ${MAX_PROPERTY_IMAGES} photos`);
         return;
       }
@@ -74,7 +74,7 @@ function ImgGallery({
       const alreadyCropped = previousCroppedImgs.some(
         (image) => image.pk === updatedImage.pk,
       );
-
+      // replace old cropped img with new one which was created from original sent img
       if (alreadyCropped) {
         return previousCroppedImgs.map((image) =>
           image.pk === updatedImage.pk ? updatedImage : image,

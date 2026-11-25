@@ -100,7 +100,9 @@ class PropertyImg(models.Model):
     listing = models.ForeignKey(
         Listing, related_name="apartment_photos", on_delete=models.CASCADE)
     is_main = models.BooleanField(default=False)
+    position = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = "PropertyImg"
         verbose_name_plural = "PropertyImgs"
+        ordering = ["position", "pk"]

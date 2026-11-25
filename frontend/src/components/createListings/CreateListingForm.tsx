@@ -13,7 +13,7 @@ import { handleDrfPostError } from "../../services/helpers";
 import { GeoService } from "../../services/geoService";
 import type { GalleryImage } from "../../types/imgTypes";
 import CreatePropertyForm from "./CreatePropertyForm";
-import RentalFilters from "./RentalFilters";
+import ListingFilters from "./ListingFilters";
 
 const listingFields = [
   "title",
@@ -67,11 +67,7 @@ function CreateListingForm({
         try {
           const coordinatesData = await GeoService.geocoding<
             GeoApiResponseType[]
-          >(
-            data.city,
-            data.street,
-            data.home_number,
-          );
+          >(data.city, data.street, data.home_number);
           const coordinate =
             coordinatesData.length === 1
               ? coordinatesData[0]?.properties
@@ -83,7 +79,8 @@ function CreateListingForm({
           await onSubmitForm(data, imgs, croppedImgs, coordinates);
           formCreate.reset();
         } catch (error: unknown) {
-          const errorMessage = "Unable to submit the listing. Please try again.";
+          const errorMessage =
+            "Unable to submit your listing. Please try again.";
           formCreate.setError("root.server", {
             type: "server",
             message: errorMessage,
@@ -189,7 +186,7 @@ function CreateListingForm({
           </label>
         </div>
       </fieldset>
-      <RentalFilters mode="set" />
+      <ListingFilters />
       <ImgGallery
         imgs={imgs}
         setImgs={setImgs}

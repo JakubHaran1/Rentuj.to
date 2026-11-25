@@ -39,7 +39,7 @@ const handleDrfPostError = <F extends FieldValues, K extends string>(
           const error_arr = [];
 
           if (typeof value === "string") error_arr.push(value);
-          if (Array.isArray(value)) error_arr.push(value);
+          if (Array.isArray(value)) value.forEach((el) => error_arr.push(el));
 
           externalForm.setError("root.server", {
             type: "server",

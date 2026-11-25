@@ -57,24 +57,24 @@ export const RentalService = {
   },
 
   // Listing related methods
-  async getListingsList(query_param = ""): Promise<ListingDefaultType[]> {
-    const resp = await publicApi.get<ListingDefaultType[]>("rentals/listings", {
-      params: {
-        owner_id: query_param || undefined,
-      },
-    });
+  async getListingsList(query = ""): Promise<ListingDefaultType[]> {
+    const url = query ? `rentals/listings?${query}` : "rentals/listings";
+    const resp = await publicApi.get<ListingDefaultType[]>(url);
     return resp.data;
   },
 
+  // Data for apartments photos:
+  //   [
+  //   { "pk": 12 }, -> img exsit and has  not been edited (updateListing)
+  //   { "pk": 15, "file_key": "foto-1" }, ->  img exsit and has  been edited
+  //   { "file_key": "foto-2" } img not exsit
+  // ]
   async createListingItem(data: ListingCreateType) {
     const { apartment_photos, ...listingData } = data;
     const formData = new FormData();
     const images: { file_key: string; is_main: boolean }[] = [];
 
-    formData.append(
-      "listing",
-      JSON.stringify(listingData),
-    );
+    formData.append("listing", JSON.stringify(listingData));
 
     apartment_photos.forEach((el) => {
       if (typeof el.pk === "number" || !el.file) {
@@ -93,29 +93,40 @@ export const RentalService = {
     return resp;
   },
 
-  // async updateListing(id: number, data: ListingCreateType) {
-  //   const { apartment_photos, ...payload } = data;
-  //   const resp = await privateApi.put<ListingDefaultType>(
-  //     "rentals/listings",
-  //     payload,
-  //   );
+  async updateListing(id: string, data: ListingCreateType) {
+    const { apartment_photos, ...listingData } = data;
+    const formData = new FormData();
 
-  //   await Promise.all(
-  //     apartment_photos.map((photo) => {
-  //       if (typeof photo.pk === "number" || !photo.file) {
-  //         return Promise.resolve();
-  //       }
+    formData.append("listing", JSON.stringify(listingData));
 
-  //       const formData = new FormData();
-  //       formData.append("listing", String(resp.data.pk));
-  //       formData.append("img", photo.file);
-  //       formData.append("is_main", String(photo.is_main));
+    const images = apartment_photos.map((image, index) => {
+      const existing = typeof image.pk === "number";
 
-  //       return privateApi.post("rentals/property-imgs", formData);
-  //     }),
-  //   );
-  //   return resp;
-  // },
+      if (!existing && !image.file) {
+        return;
+      }
+
+      const fileKey = image.file ? `image-${index}` : undefined;
+
+      if (fileKey && image.file) {
+        formData.append(fileKey, image.file);
+      }
+
+      return {
+        ...(existing ? { pk: image.pk } : {}),
+        ...(fileKey ? { file_key: fileKey } : {}),
+        is_main: index === 0,
+      };
+    });
+
+    formData.append("images", JSON.stringify(images));
+    const resp = await privateApi.put<ListingDefaultType>(
+      `rentals/listings/${id}`,
+      formData,
+    );
+
+    return resp;
+  },
 
   async deleteListing(id: number): Promise<void> {
     await privateApi.delete(`rentals/listings/${id}`);

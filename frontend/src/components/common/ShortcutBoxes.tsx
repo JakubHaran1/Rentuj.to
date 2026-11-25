@@ -32,7 +32,7 @@ const recentlyViewed = [
     imageClass: "listing-cover--three",
   },
 ];
-function RecentlyViewed() {
+function ShortcutBoxes() {
   return (
     <section className="mt-14" aria-labelledby="recent-heading">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -87,4 +87,4 @@ function RecentlyViewed() {
   );
 }
 
-export default RecentlyViewed;
+export default ShortcutBoxes;

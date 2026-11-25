@@ -2,21 +2,22 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/Homepage";
 import UpdateUserPage from "./pages/UpdateUserPage";
-import CreateListing from "./pages/rentals/CreateListingPage";
-import MyListingPage from "./pages/rentals/MyListingsPage";
-import RentalsDetailPage from "./pages/rentals/ListingDetailPage";
+import CreateListing from "./pages/listings/CreateListingPage";
+import MyListingPage from "./pages/listings/MyListingsPage";
+import RentalsDetailPage from "./pages/listings/ListingDetailPage";
 
 import ThanksPage from "./pages/static_pages/ThanksPage";
 import PasswordChangePage from "./pages/static_pages/PasswordChangePage";
 
 import Header from "./components/main/Header";
-import RecentlyViewed from "./components/main/RecentlyViewed";
+import ShortcutBoxes from "./components/common/ShortcutBoxes";
 import Fotter from "./components/main/Footer";
 
 import RequireAuth from "./components/common/RequireAuth";
-import EditRentalPage from "./pages/rentals/EditListingPage";
+import EditRentalPage from "./pages/listings/EditListingPage";
+import ListingsPage from "./pages/listings/ListingsPage";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(
@@ -51,9 +52,10 @@ function App() {
             <Route path="/my-listings" element={<MyListingPage />} />
             <Route path="/rental-edit/:pk" element={<EditRentalPage />} />
           </Route>
+          <Route path="/listings" element={<ListingsPage />} />
         </Routes>
 
-        <RecentlyViewed />
+        <ShortcutBoxes />
       </main>
 
       <Fotter />

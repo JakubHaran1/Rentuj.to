@@ -41,30 +41,34 @@ type ListingOwnerType = Omit<UserType, "avatar"> & {
   avatar: { img: string; user: string }[];
 };
 
-type ListingDefaultType = ListingLocationType & PropertyCoordinatesType & {
-  pk: number;
-  owner: ListingOwnerType;
-  description: string | null;
-  title: string;
-  is_active: boolean;
-  price: number;
-  date_active: string | null;
-  filters: ListingFilterType[];
-  apartment_photos: GalleryImage[];
-};
+type ListingDefaultType = ListingLocationType &
+  PropertyCoordinatesType & {
+    pk: number;
+    owner: ListingOwnerType;
+    description: string | null;
+    title: string;
+    is_active: boolean;
+    price: number;
+    date_active: string | null;
+    filters: ListingFilterType[];
+    apartment_photos: GalleryImage[];
+  };
 
-type ListingCreateType = ListingLocationType & PropertyCoordinatesType & {
-  title: string;
-  description: string | null;
-  price: number;
-  date_active: string | null;
-  filters: ListingFilterAssignmentType[];
-  apartment_photos: GalleryImage[];
-};
+type ListingCreateType = ListingLocationType &
+  PropertyCoordinatesType & {
+    title: string;
+    description: string | null;
+    price: number;
+    date_active: string | null;
+    filters: ListingFilterAssignmentType[];
+    apartment_photos: GalleryImage[];
+  };
 
 type GeoApiResponseType = {
   properties: {
-    address_line1: string;
+    city?: string;
+    street?: string;
+    name: string;
     formatted: string;
     lat: number;
     lon: number;
@@ -72,11 +76,17 @@ type GeoApiResponseType = {
 };
 
 type MainFiltersType = {
-  price: number;
-  buildingType: BuildingType;
-  numberOfLevels: number;
-  numberOfRooms: number;
-  squareMeters: number;
+  search?: string;
+  price__lte: number | "";
+  building_type: BuildingType | "";
+  number_of_levels: number | "";
+  number_of_rooms: number | "";
+  square_meters__gte: number | "";
+};
+
+type SearchFiltersType = {
+  mainFilters: MainFiltersType;
+  filters: ListingFilterAssignmentType[];
 };
 
 export type {
@@ -89,4 +99,5 @@ export type {
   ListingFilterAssignmentType,
   ListingFilterType,
   ListingFilterNameType,
+  SearchFiltersType,
 };

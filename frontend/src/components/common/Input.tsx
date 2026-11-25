@@ -1,7 +1,8 @@
-import { useId, type InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type Ref } from "react";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
+  ref?: Ref<HTMLInputElement>;
   error?: string;
   labelClassName?: string;
 };
@@ -16,6 +17,7 @@ function Input({
   className = "",
   id,
   type = "text",
+  placeholder,
   ...inputProps
 }: InputProps) {
   const generatedId = useId();
@@ -43,6 +45,7 @@ function Input({
         className={inputClassName}
         id={inputId}
         type={type}
+        placeholder={placeholder}
       />
       {error && (
         <span

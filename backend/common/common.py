@@ -48,7 +48,7 @@ def create_path(instance, filename: str):
     if hasattr(instance, "user"):
         obj_id = instance.user.pk
     elif hasattr(instance, "listing"):
-        obj_id = instance.listing.property.owner.pk
+        obj_id = instance.listing.owner.pk
 
     else:
         raise ValueError(

@@ -1,15 +1,16 @@
 import axios from "axios";
+import type { GeoApiResponseType } from "../types/propertyTypes";
 
 const GEO_API = import.meta.env.VITE_GEO_API_KEY;
 export const GeoService = {
-  async addressAutocomplete(address: string, type: string) {
-    console.log(GEO_API);
-    const resp = await axios.get(
+  async addressAutocomplete(address: string, type?: string) {
+    const resp = await axios.get<{ features: GeoApiResponseType[] }>(
       `https://api.geoapify.com/v1/geocode/autocomplete`,
       {
         params: {
           text: address,
           type: type,
+          lang: "en",
           limit: 5,
           apiKey: GEO_API,
         },

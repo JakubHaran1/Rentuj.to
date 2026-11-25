@@ -63,6 +63,7 @@ function EditRentalPage() {
     croppedImgs: GalleryImage[],
     coordinates: PropertyCoordinatesType,
   ) => {
+    if (!pk) return;
     const dataToSend = RentalService.prepareListingDataToSend(
       data,
       imgs,
@@ -70,7 +71,7 @@ function EditRentalPage() {
       coordinates,
     );
 
-    await RentalService.createListingItem(dataToSend);
+    await RentalService.updateListing(pk, dataToSend);
     setImgs([]);
     setCroppedImgs([]);
   };

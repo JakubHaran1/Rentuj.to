@@ -1,49 +1,141 @@
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import ListingFilters from "../createListings/ListingFilters";
+import MainFilters from "../createListings/MainFilters";
+import { FormProvider, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import type {
+  ListingFilterAssignmentType,
+  SearchFiltersType,
+} from "../../types/propertyTypes";
 
-function Search() {
+import { Controller } from "react-hook-form";
+import SuggestionField from "../suggestions/SuggestionField";
+
+type searchProps = {
+  queryString?: string;
+};
+
+function Search({ queryString }: searchProps) {
+  const navigate = useNavigate();
+
+  const [showFilters, setShowFilters] = useState(false);
+  const searchForm = useForm<SearchFiltersType>({
+    defaultValues: {
+      mainFilters: {
+        search: "",
+        price__lte: "",
+        building_type: "",
+        number_of_levels: "",
+        number_of_rooms: "",
+        square_meters__gte: "",
+      },
+      filters: [],
+    },
+  });
+
+  const onSearch = (data: SearchFiltersType) => {
+    const params = new URLSearchParams();
+    const main = data.mainFilters;
+    const listingFilters = data.filters;
+    Object.entries(main).forEach(([key, val]) => {
+      if (val == null || val === "") return;
+      params.set(key, String(val));
+    });
+
+    listingFilters.forEach(({ pk, value }) =>
+      params.append("filter", `${pk}:${String(value)}`),
+    );
+    navigate(`/listings?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const numFields = [
+      "price__lte",
+      "number_of_levels",
+      "number_of_rooms",
+      "square_meters__gte",
+    ] as const;
+    const queryParam = new URLSearchParams(queryString);
+    searchForm.setValue("mainFilters.search", queryParam.get("search") ?? "");
+    numFields.forEach((el) => {
+      const raw = queryParam.get(el);
+      const value = Number(raw);
+      searchForm.setValue(
+        `mainFilters.${el}`,
+        raw !== null && raw !== "" && Number.isFinite(value) ? value : "",
+      );
+    });
+
+    const listingFiltersQuery = queryParam.getAll("filter");
+    const listingFiltersValues: ListingFilterAssignmentType[] = [];
+    listingFiltersQuery.forEach((filter) => {
+      const [pk, val] = filter.split(":");
+      const filterValue = Number(val);
+      const filterKey = Number(pk);
+
+      if (val !== null || val !== "" || Number.isFinite(filterValue))
+        listingFiltersValues.push({
+          pk: filterKey,
+          value:
+            filterValue === 0
+              ? filterValue
+              : filterValue === 1
+                ? filterValue
+                : 0,
+        });
+    });
+
+    searchForm.setValue("filters", listingFiltersValues);
+    console.log(listingFiltersQuery);
+  }, [queryString, searchForm]);
   return (
     <>
       <section aria-label="Apartment search">
-        <form className="grid gap-3 rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_auto] lg:items-end dark:border-slate-800 dark:bg-slate-900">
-          <label className="block text-sm font-medium">
-            Location
-            <input
-              className="mt-2 w-full rounded-lg border border-[#c2c9d2] bg-[#dfe3e9] px-3 py-3 text-sm font-normal outline-none placeholder:text-[#6b7280] focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/15 dark:border-slate-700 dark:bg-slate-950"
-              name="location"
-              placeholder="City, neighbourhood or postcode"
-            />
-          </label>
-          <label className="block text-sm font-medium">
-            Monthly budget
-            <select
-              className="mt-2 w-full rounded-lg border border-[#c2c9d2] bg-[#dfe3e9] px-3 py-3 text-sm font-normal outline-none focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/15 dark:border-slate-700 dark:bg-slate-950"
-              name="budget"
-              defaultValue=""
-            >
-              <option value="">Any budget</option>
-              <option value="2500">Up to PLN 2,500</option>
-              <option value="3500">Up to PLN 3,500</option>
-              <option value="5000">Up to PLN 5,000</option>
-            </select>
-          </label>
-          <label className="block text-sm font-medium">
-            Rental term
-            <select
-              className="mt-2 w-full rounded-lg border border-[#c2c9d2] bg-[#dfe3e9] px-3 py-3 text-sm font-normal outline-none focus:border-[#2f80ed] focus:ring-2 focus:ring-[#2f80ed]/15 dark:border-slate-700 dark:bg-slate-950"
-              name="rentalType"
-              defaultValue="long-term"
-            >
-              <option value="long-term">Long-term</option>
-              <option value="any">Any term</option>
-            </select>
-          </label>
-          <Button className="px-6 py-3" type="submit">
-            Search rentals
-          </Button>
-        </form>
-      </section>
+        <FormProvider {...searchForm}>
+          <form
+            onSubmit={searchForm.handleSubmit(onSearch)}
+            className="rounded-xl border border-[#c2c9d2] bg-[#e9edf2] p-4 shadow-sm sm:grid-cols-2  dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="relative mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
+              <Controller
+                name="mainFilters.search"
+                control={searchForm.control}
+                rules={{ required: "Location field is required" }}
+                render={({ field, fieldState }) => (
+                  <SuggestionField
+                    className="min-w-0"
+                    label="Location"
+                    type=""
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name ?? ""}
+                    inputRef={field.ref}
+                    error={fieldState.error?.message}
+                    placeholder="Pass city or street where you would like to live"
+                  />
+                )}
+              />
 
-      {/* <RentalFilters /> */}
+              <Button className="min-w-0" type="submit">
+                Search rentals
+              </Button>
+            </div>
+            <ListingFilters
+              expanded={showFilters}
+              onToggle={() => setShowFilters((visible) => !visible)}
+              mainFiltersCount={
+                Object.keys(
+                  searchForm.formState.defaultValues?.mainFilters ?? {},
+                ).length
+              }
+            >
+              <MainFilters expanded={showFilters} />
+            </ListingFilters>
+          </form>
+        </FormProvider>
+      </section>
     </>
   );
 }
